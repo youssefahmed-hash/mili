@@ -1,0 +1,65 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Cairo', 'Tajawal', system-ui, -apple-system, sans-serif;
+
+  /* Military Themed Palette */
+  --color-military-900: hsl(220, 15%, 8%);
+  --color-military-800: hsl(220, 15%, 12%);
+  --color-military-700: hsl(220, 15%, 16%);
+  --color-military-600: hsl(220, 15%, 22%);
+  --color-military-500: hsl(220, 15%, 35%);
+  --color-military-primary: hsl(220, 70%, 50%);
+  --color-military-accent: hsl(45, 90%, 55%);
+  --color-military-success: hsl(150, 60%, 45%);
+  --color-military-warning: hsl(35, 90%, 55%);
+  --color-military-danger: hsl(0, 70%, 55%);
+}
+
+@layer base {
+  html,
+  body {
+    direction: rtl;
+    text-align: right;
+    font-family: var(--font-sans);
+    background-color: var(--color-military-900);
+    color: #f3f4f6; /* gray-100 */
+    overflow-x: hidden;
+    height: 100%;
+    margin: 0;
+  }
+
+  /* Custom scrollbar for military style */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-military-900);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-military-700);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-military-600);
+  }
+}
+
+/* Custom CSS utilities */
+.glassmorphism {
+  background: rgba(18, 24, 38, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glassmorphism-hover {
+  transition: all 0.2s ease-in-out;
+}
+
+.glassmorphism-hover:hover {
+  background: rgba(22, 30, 47, 0.85);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}

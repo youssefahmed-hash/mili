@@ -1,0 +1,121 @@
+import React from 'react'
+import { UserPlus, FilterX } from 'lucide-react'
+import { usePersonnelStore } from '../../store/personnelStore'
+import { Select } from '../ui/Select'
+import { Button } from '../ui/Button'
+
+interface PersonnelToolbarProps {
+  onAddClick: () => void
+}
+
+export const PersonnelToolbar: React.FC<PersonnelToolbarProps> = ({ onAddClick }) => {
+  const { filters, setFilters, clearFilters } = usePersonnelStore()
+
+  const categoryOptions = [
+    { value: '', label: 'كل الفئات' },
+    { value: 'soldier', label: 'جندي' },
+    { value: 'non_commissioned_officer', label: 'ضابط صف' },
+    { value: 'officer', label: 'ضابط' }
+  ]
+
+  const statusOptions = [
+    { value: '', label: 'كل الحالات' },
+    { value: 'على رأس العمل', label: 'على رأس العمل' },
+    { value: 'إجازة', label: 'إجازة' },
+    { value: 'موقوف', label: 'موقوف' },
+    { value: 'منتهية خدمته', label: 'منتهية خدمته' }
+  ]
+
+  const rankOptions = [
+    { value: '', label: 'كل الرتب' },
+    { value: 'جندي', label: 'جندي' },
+    { value: 'عريف', label: 'عريف' },
+    { value: 'رقيب', label: 'رقيب' },
+    { value: 'رقيب أول', label: 'رقيب أول' },
+    { value: 'مساعد', label: 'مساعد' },
+    { value: 'مساعد أول', label: 'مساعد أول' },
+    { value: 'ملازم', label: 'ملازم' },
+    { value: 'ملازم أول', label: 'ملازم أول' },
+    { value: 'نقيب', label: 'نقيب' },
+    { value: 'رائد', label: 'رائد' },
+    { value: 'مقدم', label: 'مقدم' },
+    { value: 'عقيد', label: 'عقيد' },
+    { value: 'عميد', label: 'عميد' },
+    { value: 'لواء', label: 'لواء' }
+  ]
+
+  const unitOptions = [
+    { value: '', label: 'كل الوحدات' },
+    { value: 'الكتيبة الأولى', label: 'الكتيبة الأولى' },
+    { value: 'الكتيبة الثانية', label: 'الكتيبة الثانية' },
+    { value: 'الكتيبة الثالثة', label: 'الكتيبة الثالثة' },
+    { value: 'اللواء الرابع عشر', label: 'اللواء الرابع عشر' },
+    { value: 'قيادة المنطقة الشرقية', label: 'قيادة المنطقة الشرقية' },
+    { value: 'مقر القيادة العامة', label: 'مقر القيادة العامة' }
+  ]
+
+  const handleFilterChange = (key: string, value: string): void => {
+    setFilters({ [key]: value || undefined })
+  }
+
+  const hasActiveFilters = Object.values(filters).some((v) => v !== undefined)
+
+  return (
+    <div className="glassmorphism p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between">
+      {/* Filters Area */}
+      <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+        <div className="w-[140px]">
+          <Select
+            options={categoryOptions}
+            value={filters.category || ''}
+            onChange={(e) => handleFilterChange('category', e.target.value)}
+          />
+        </div>
+        <div className="w-[140px]">
+          <Select
+            options={rankOptions}
+            value={filters.rank || ''}
+            onChange={(e) => handleFilterChange('rank', e.target.value)}
+          />
+        </div>
+        <div className="w-[160px]">
+          <Select
+            options={unitOptions}
+            value={filters.unit || ''}
+            onChange={(e) => handleFilterChange('unit', e.target.value)}
+          />
+        </div>
+        <div className="w-[140px]">
+          <Select
+            options={statusOptions}
+            value={filters.status || ''}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+          />
+        </div>
+
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="text-red-400 hover:text-red-300 font-semibold"
+            startIcon={<FilterX className="h-4 w-4" />}
+          >
+            إعادة تعيين
+          </Button>
+        )}
+      </div>
+
+      {/* Action Buttons */}
+      <div className="w-full md:w-auto flex justify-end">
+        <Button
+          variant="primary"
+          onClick={onAddClick}
+          startIcon={<UserPlus className="h-4.5 w-4.5" />}
+        >
+          إضافة فرد عسكري جديد
+        </Button>
+      </div>
+    </div>
+  )
+}

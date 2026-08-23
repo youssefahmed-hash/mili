@@ -1,0 +1,153 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Personnel = void 0;
+const typeorm_1 = require("typeorm");
+const Document_1 = require("./Document");
+const Vacation_1 = require("./Vacation");
+const Form_1 = require("./Form");
+let Personnel = class Personnel {
+};
+exports.Personnel = Personnel;
+__decorate([
+    (0, typeorm_1.PrimaryGeneratedColumn)("uuid"),
+    __metadata("design:type", String)
+], Personnel.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255 }),
+    __metadata("design:type", String)
+], Personnel.prototype, "fullName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 500, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "photo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: "enum",
+        enum: ['soldier', 'non_commissioned_officer', 'officer']
+    }),
+    __metadata("design:type", String)
+], Personnel.prototype, "category", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 100 }),
+    __metadata("design:type", String)
+], Personnel.prototype, "rank", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 100, unique: true }),
+    __metadata("design:type", String)
+], Personnel.prototype, "militaryId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 14, unique: true }),
+    __metadata("design:type", String)
+], Personnel.prototype, "nationalId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date" }),
+    __metadata("design:type", Date)
+], Personnel.prototype, "birthDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "birthPlace", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 100, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "maritalStatus", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255 }),
+    __metadata("design:type", String)
+], Personnel.prototype, "unit", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "department", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "specialization", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "appointmentDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "serviceStartDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: "enum",
+        enum: ['على رأس العمل', 'إجازة', 'موقوف', 'منتهية خدمته'],
+        default: 'على رأس العمل'
+    }),
+    __metadata("design:type", String)
+], Personnel.prototype, "status", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "education", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 50, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "phone", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "email", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "text", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "address", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "emergencyContact", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 50, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "emergencyPhone", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 50, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "performanceRating", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "lastPromotionDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "nextPromotionDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "text", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "notes", void 0);
+__decorate([
+    (0, typeorm_1.CreateDateColumn)(),
+    __metadata("design:type", Date)
+], Personnel.prototype, "createdAt", void 0);
+__decorate([
+    (0, typeorm_1.UpdateDateColumn)(),
+    __metadata("design:type", Date)
+], Personnel.prototype, "updatedAt", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => Document_1.Document, (document) => document.personnel, { cascade: true }),
+    __metadata("design:type", Array)
+], Personnel.prototype, "documents", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => Vacation_1.Vacation, (vacation) => vacation.personnel, { cascade: true }),
+    __metadata("design:type", Array)
+], Personnel.prototype, "vacations", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => Form_1.Form, (form) => form.personnel, { cascade: true }),
+    __metadata("design:type", Array)
+], Personnel.prototype, "forms", void 0);
+exports.Personnel = Personnel = __decorate([
+    (0, typeorm_1.Entity)("personnel")
+], Personnel);
