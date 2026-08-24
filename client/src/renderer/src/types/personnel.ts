@@ -65,6 +65,39 @@ export interface Form {
   personnelId: string
 }
 
+export interface ClinicRecord {
+  id: string
+  examinationType: string
+  medicalStatus: string
+  notes: string | null
+  examinationDate: string | null
+  createdAt: string
+  personnelId: string
+  personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank'>
+}
+
+export interface OperationRecord {
+  id: string
+  missionName: string
+  location: string
+  status: string
+  missionDate: string | null
+  createdAt: string
+  personnelId: string
+  personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank'>
+}
+
+export interface SecurityRecord {
+  id: string
+  event: string
+  location: string
+  status: string
+  eventTime: string | null
+  createdAt: string
+  personnelId: string
+  personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank'>
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean
   data: T

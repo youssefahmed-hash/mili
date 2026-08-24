@@ -2,6 +2,9 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, Up
 import { Document } from "./Document";
 import { Vacation } from "./Vacation";
 import { Form } from "./Form";
+import { ClinicRecord } from "./ClinicRecord";
+import { OperationRecord } from "./OperationRecord";
+import { SecurityRecord } from "./SecurityRecord";
 
 export type PersonnelCategory = 'soldier' | 'non_commissioned_officer' | 'officer';
 export type PersonnelStatus = 'على رأس العمل' | 'إجازة' | 'موقوف' | 'منتهية خدمته';
@@ -107,4 +110,13 @@ export class Personnel {
 
     @OneToMany(() => Form, (form) => form.personnel, { cascade: true })
     forms!: Form[];
+
+    @OneToMany(() => ClinicRecord, (record) => record.personnel, { cascade: true })
+    clinicRecords!: ClinicRecord[];
+
+    @OneToMany(() => OperationRecord, (record) => record.personnel, { cascade: true })
+    operationsRecords!: OperationRecord[];
+
+    @OneToMany(() => SecurityRecord, (record) => record.personnel, { cascade: true })
+    securityRecords!: SecurityRecord[];
 }

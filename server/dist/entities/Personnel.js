@@ -14,6 +14,9 @@ const typeorm_1 = require("typeorm");
 const Document_1 = require("./Document");
 const Vacation_1 = require("./Vacation");
 const Form_1 = require("./Form");
+const ClinicRecord_1 = require("./ClinicRecord");
+const OperationRecord_1 = require("./OperationRecord");
+const SecurityRecord_1 = require("./SecurityRecord");
 let Personnel = class Personnel {
 };
 exports.Personnel = Personnel;
@@ -148,6 +151,18 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => Form_1.Form, (form) => form.personnel, { cascade: true }),
     __metadata("design:type", Array)
 ], Personnel.prototype, "forms", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => ClinicRecord_1.ClinicRecord, (record) => record.personnel, { cascade: true }),
+    __metadata("design:type", Array)
+], Personnel.prototype, "clinicRecords", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => OperationRecord_1.OperationRecord, (record) => record.personnel, { cascade: true }),
+    __metadata("design:type", Array)
+], Personnel.prototype, "operationsRecords", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => SecurityRecord_1.SecurityRecord, (record) => record.personnel, { cascade: true }),
+    __metadata("design:type", Array)
+], Personnel.prototype, "securityRecords", void 0);
 exports.Personnel = Personnel = __decorate([
     (0, typeorm_1.Entity)("personnel")
 ], Personnel);

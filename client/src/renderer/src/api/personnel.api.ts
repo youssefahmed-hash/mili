@@ -8,6 +8,13 @@ export const getPersonnel = async (
   return response.data
 }
 
+export const getAllPersonnel = async (): Promise<ApiResponse<Personnel[]>> => {
+  const response = await API.get('/personnel', {
+    params: { page: 1, limit: 1000 }
+  })
+  return response.data
+}
+
 export const getPersonnelById = async (id: string): Promise<ApiResponse<Personnel>> => {
   const response = await API.get(`/personnel/${id}`)
   return response.data

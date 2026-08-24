@@ -4,6 +4,9 @@ import { Personnel } from "../entities/Personnel";
 import { Document } from "../entities/Document";
 import { Vacation } from "../entities/Vacation";
 import { Form } from "../entities/Form";
+import { ClinicRecord } from "../entities/ClinicRecord";
+import { OperationRecord } from "../entities/OperationRecord";
+import { SecurityRecord } from "../entities/SecurityRecord";
 
 export const AppDataSource = new DataSource({
     type: "postgres",
@@ -14,7 +17,7 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME || "military_personnel_db",
     synchronize: true, // Auto-create tables in development
     logging: false,
-    entities: [Personnel, Document, Vacation, Form],
+    entities: [Personnel, Document, Vacation, Form, ClinicRecord, OperationRecord, SecurityRecord],
     migrations: [],
     subscribers: [],
 });

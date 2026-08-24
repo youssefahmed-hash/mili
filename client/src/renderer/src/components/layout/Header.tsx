@@ -30,7 +30,7 @@ export const Header: React.FC = () => {
         <div className="flex flex-col text-end">
           <span className="text-sm font-bold text-white leading-tight">مسؤول النظام</span>
           <span className="text-[10px] text-military-accent font-semibold leading-tight">
-            الرتبة: عقيد
+            الرتبة: عميد
           </span>
         </div>
         <div className="h-8 w-8 rounded-full bg-military-primary flex items-center justify-center border border-white/10 shadow-lg">

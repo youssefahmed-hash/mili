@@ -1,85 +1,126 @@
-import React, { useState } from 'react'
-import { Crosshair, Shield, MapPin, UserCheck, Play } from 'lucide-react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { Crosshair, Shield, MapPin, UserCheck, Play, Trash2 } from 'lucide-react'
 import { Table, Column } from '../ui/Table'
 import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
 import { Modal } from '../ui/Modal'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
-
-interface Mission {
-  id: number
-  name: string
-  force: string
-  location: string
-  date: string
-  status: string
-}
+import { PersonnelSelect } from '../ui/PersonnelSelect'
+import {
+  getOperationsRecords,
+  createOperationRecord,
+  deleteOperationRecord
+} from '../../api/operations.api'
+import type { OperationRecord } from '../../types/personnel'
 
 export const OperationsDashboard: React.FC = () => {
-  const [missions, setMissions] = useState<Mission[]>([
-    {
-      id: 1,
-      name: 'تأمين قطاع ب',
-      force: '25 فرد (مجموعة طوارئ)',
-      location: 'المحور الغربي',
-      date: '2026-08-23',
-      status: 'نشطة'
-    },
-    {
-      id: 2,
-      name: 'دورية استطلاع حدودية',
-      force: '6 أفراد + مدرعة',
-      location: 'القطاع الشمالي',
-      date: '2026-08-22',
-      status: 'مكتملة'
-    },
-    {
-      id: 3,
-      name: 'تدريب رماية حيّة',
-      force: 'الكتيبة الثالثة',
-      location: 'ميدان التدريب الموحد',
-      date: '2026-08-24',
-      status: 'مخططة'
-    }
-  ])
-
+  const [records, setRecords] = useState<OperationRecord[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
-    name: '',
-    force: '',
+    personnelId: '',
+    missionName: '',
     location: '',
-    date: '',
-    status: 'مخططة'
+    status: 'مخططة',
+    missionDate: ''
   })
 
-  const stats = [
-    { label: 'القوة الإجمالية بالخدمة', value: '342 فرد', icon: UserCheck, color: 'text-blue-400' },
-    { label: 'مكلفون بمهام خارجية', value: '18 فرد', icon: MapPin, color: 'text-amber-400' },
-    {
-      label: 'حالة الاستعداد القتالي',
-      value: 'تأهب كامل (ج)',
-      icon: Shield,
-      color: 'text-red-400'
-    },
-    { label: 'النشاط العملياتي اليومي', value: '92%', icon: Crosshair, color: 'text-emerald-400' }
-  ]
+  const fetchRecords = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await getOperationsRecords()
+      if (res.success) {
+        setRecords(res.data)
+      }
+    } catch {
+      setError('فشل تحميل سجلات العمليات')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
-  const handleSubmit = (): void => {
-    if (!formData.name.trim() || !formData.location.trim()) return
-    setMissions((prev) => [...prev, { ...formData, id: Date.now() }])
-    setFormData({ name: '', force: '', location: '', date: '', status: 'مخططة' })
-    setIsModalOpen(false)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchRecords()
+  }, [fetchRecords])
+
+  const handleSubmit = async (): Promise<void> => {
+    if (!formData.personnelId) {
+      setError('الرجاء اختيار الفرد المكلف بالمهمة')
+      return
+    }
+    if (!formData.missionName.trim() || !formData.location.trim()) {
+      setError('الرجاء إدخال اسم العملية ومكان التحرك')
+      return
+    }
+    setSubmitting(true)
+    setError(null)
+    try {
+      const payload = {
+        ...formData,
+        missionDate: formData.missionDate || null
+      }
+      const res = await createOperationRecord(payload)
+      if (res.success) {
+        setFormData({
+          personnelId: '',
+          missionName: '',
+          location: '',
+          status: 'مخططة',
+          missionDate: ''
+        })
+        setIsModalOpen(false)
+        fetchRecords()
+      } else {
+        setError(res.message || 'فشل إصدار أمر التحرك')
+      }
+    } catch (err) {
+      const e = err as { response?: { data?: { message?: string } } }
+      setError(e.response?.data?.message || 'حدث خطأ أثناء إصدار الأمر')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
-  const columns: Column<Mission>[] = [
-    { key: 'name', label: 'اسم العملية / المهمة العسكرية' },
-    { key: 'force', label: 'القوة المكلفة' },
-    { key: 'location', label: 'مكان/جهة التحرك' },
-    { key: 'date', label: 'تاريخ البدء/التكليف' },
+  const handleDelete = async (id: string): Promise<void> => {
+    if (!confirm('هل أنت متأكد من حذف هذا السجل العملياتي؟')) return
+    try {
+      await deleteOperationRecord(id)
+      fetchRecords()
+    } catch {
+      setError('فشل حذف السجل')
+    }
+  }
+
+  const statusOptions = [
+    { value: 'مخططة', label: 'مخططة' },
+    { value: 'نشطة', label: 'نشطة' },
+    { value: 'مكتملة', label: 'مكتملة' }
+  ]
+
+  const columns: Column<OperationRecord>[] = [
+    {
+      key: 'personnel',
+      label: 'الفرد المكلف',
+      render: (row) => (
+        <div className="flex flex-col">
+          <span className="font-bold text-white">{row.personnel?.fullName ?? '—'}</span>
+          <span className="text-xs text-gray-400">
+            {row.personnel?.rank} / {row.personnel?.militaryId}
+          </span>
+        </div>
+      )
+    },
+    { key: 'missionName', label: 'اسم العملية / المهمة' },
+    { key: 'location', label: 'مكان / جهة التحرك' },
+    { key: 'missionDate', label: 'تاريخ البدء' },
     {
       key: 'status',
-      label: 'حالة العملية',
+      label: 'الحالة',
       render: (row) => {
         const isActive = row.status === 'نشطة'
         const isDone = row.status === 'مكتملة'
@@ -87,13 +128,50 @@ export const OperationsDashboard: React.FC = () => {
           <Badge variant={isActive ? 'danger' : isDone ? 'success' : 'warning'}>{row.status}</Badge>
         )
       }
+    },
+    {
+      key: 'actions',
+      label: 'الإجراءات',
+      align: 'center' as const,
+      render: (row) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+          onClick={() => handleDelete(row.id)}
+          title="حذف السجل"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      )
     }
   ]
 
-  const statusOptions = [
-    { value: 'مخططة', label: 'مخططة' },
-    { value: 'نشطة', label: 'نشطة' },
-    { value: 'مكتملة', label: 'مكتملة' }
+  const stats = [
+    {
+      label: 'إجمالي العمليات',
+      value: `${records.length} عملية`,
+      icon: UserCheck,
+      color: 'text-blue-400'
+    },
+    {
+      label: 'عمليات نشطة',
+      value: `${records.filter((r) => r.status === 'نشطة').length} عملية`,
+      icon: Shield,
+      color: 'text-red-400'
+    },
+    {
+      label: 'مخططة',
+      value: `${records.filter((r) => r.status === 'مخططة').length} عملية`,
+      icon: MapPin,
+      color: 'text-amber-400'
+    },
+    {
+      label: 'مكتملة',
+      value: `${records.filter((r) => r.status === 'مكتملة').length} عملية`,
+      icon: Crosshair,
+      color: 'text-emerald-400'
+    }
   ]
 
   return (
@@ -114,6 +192,12 @@ export const OperationsDashboard: React.FC = () => {
           إصدار أمر تحرك عسكري جديد
         </Button>
       </div>
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm font-bold">
+          {error}
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -141,7 +225,7 @@ export const OperationsDashboard: React.FC = () => {
         <h3 className="text-lg font-bold text-white">
           تحركات القوات والمهام العسكرية الجارية والمخططة
         </h3>
-        <Table columns={columns} data={missions} />
+        <Table columns={columns} data={records} loading={loading} />
       </div>
 
       {/* Modal */}
@@ -151,27 +235,25 @@ export const OperationsDashboard: React.FC = () => {
         title="إصدار أمر تحرك عسكري جديد"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+            <Button variant="secondary" onClick={() => setIsModalOpen(false)} disabled={submitting}>
               إلغاء
             </Button>
-            <Button variant="accent" onClick={handleSubmit}>
+            <Button variant="accent" onClick={handleSubmit} loading={submitting}>
               إصدار الأمر
             </Button>
           </>
         }
       >
         <div className="flex flex-col gap-4">
-          <Input
-            label="اسم العملية / المهمة"
-            value={formData.name}
-            onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-            placeholder="مثال: تأمين قطاع شمالي"
+          <PersonnelSelect
+            value={formData.personnelId}
+            onChange={(v) => setFormData((p) => ({ ...p, personnelId: v }))}
           />
           <Input
-            label="القوة المكلفة"
-            value={formData.force}
-            onChange={(e) => setFormData((p) => ({ ...p, force: e.target.value }))}
-            placeholder="مثال: 25 فرد (مجموعة طوارئ)"
+            label="اسم العملية / المهمة"
+            value={formData.missionName}
+            onChange={(e) => setFormData((p) => ({ ...p, missionName: e.target.value }))}
+            placeholder="مثال: تأمين قطاع شمالي"
           />
           <Input
             label="مكان / جهة التحرك"
@@ -182,8 +264,8 @@ export const OperationsDashboard: React.FC = () => {
           <Input
             label="تاريخ البدء"
             type="date"
-            value={formData.date}
-            onChange={(e) => setFormData((p) => ({ ...p, date: e.target.value }))}
+            value={formData.missionDate}
+            onChange={(e) => setFormData((p) => ({ ...p, missionDate: e.target.value }))}
           />
           <Select
             label="حالة العملية"

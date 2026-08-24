@@ -1,97 +1,119 @@
-import React, { useState } from 'react'
-import { Lock, AlertTriangle, KeyRound, Radio } from 'lucide-react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { Lock, AlertTriangle, KeyRound, Radio, Trash2 } from 'lucide-react'
 import { Table, Column } from '../ui/Table'
 import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
 import { Modal } from '../ui/Modal'
 import { Input } from '../ui/Input'
-
-interface SecurityLog {
-  id: number
-  event: string
-  location: string
-  person: string
-  time: string
-  status: string
-}
+import { PersonnelSelect } from '../ui/PersonnelSelect'
+import {
+  getSecurityRecords,
+  createSecurityRecord,
+  deleteSecurityRecord
+} from '../../api/security.api'
+import type { SecurityRecord } from '../../types/personnel'
 
 export const SecurityDashboard: React.FC = () => {
-  const [logs, setLogs] = useState<SecurityLog[]>([
-    {
-      id: 1,
-      event: 'تسجيل دخول غير مصرح به للبوابة 3',
-      location: 'البوابة الرئيسية الشرقية',
-      person: 'شخص مدني بمرافقة فرد',
-      time: '14:22',
-      status: 'تم الاحتجاز والتحقيق'
-    },
-    {
-      id: 2,
-      event: 'تغيير كلمة مرور نظام تشفير المراسلات',
-      location: 'غرفة الحاسب الآلي الرئيسي',
-      person: 'نقيب / محمد سالم',
-      time: '11:05',
-      status: 'مكتمل بنجاح'
-    },
-    {
-      id: 3,
-      event: 'تسيير دورية تمشيط أمن حدودي داخلية',
-      location: 'المنطقة المحيطة بالمخازن',
-      person: 'ملازم أول / أحمد فرج',
-      time: '09:45',
-      status: 'آمن بالكامل'
-    }
-  ])
-
+  const [records, setRecords] = useState<SecurityRecord[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
+    personnelId: '',
     event: '',
     location: '',
-    person: '',
-    time: '',
-    status: 'قيد المراجعة'
+    status: 'قيد المراجعة',
+    eventTime: ''
   })
 
-  const stats = [
-    {
-      label: 'تصاريح الدخول النشطة اليوم',
-      value: '48 تصريح',
-      icon: KeyRound,
-      color: 'text-emerald-400'
-    },
-    {
-      label: 'البلاغات الأمنية المفتوحة',
-      value: `${logs.filter((l) => l.status.includes('الاحتجاز') || l.status.includes('قيد')).length} بلاغ`,
-      icon: AlertTriangle,
-      color: 'text-red-400'
-    },
-    { label: 'حواجز المراقبة الفعّالة', value: '6 نقاط', icon: Radio, color: 'text-blue-400' },
-    { label: 'مستوى التشفير والأمان', value: 'درجة أولي (أ)', icon: Lock, color: 'text-purple-400' }
-  ]
+  const fetchRecords = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await getSecurityRecords()
+      if (res.success) {
+        setRecords(res.data)
+      }
+    } catch {
+      setError('فشل تحميل البلاغات الأمنية')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
-  const handleSubmit = (): void => {
-    if (!formData.event.trim() || !formData.location.trim()) return
-    const now = new Date()
-    setLogs((prev) => [
-      {
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchRecords()
+  }, [fetchRecords])
+
+  const handleSubmit = async (): Promise<void> => {
+    if (!formData.personnelId) {
+      setError('الرجاء اختيار الفرد المعني بالبلاغ')
+      return
+    }
+    if (!formData.event.trim() || !formData.location.trim()) {
+      setError('الرجاء إدخال وصف الحادثة والموقع')
+      return
+    }
+    setSubmitting(true)
+    setError(null)
+    try {
+      const payload = {
         ...formData,
-        id: Date.now(),
-        time: `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
-      },
-      ...prev
-    ])
-    setFormData({ event: '', location: '', person: '', time: '', status: 'قيد المراجعة' })
-    setIsModalOpen(false)
+        eventTime: formData.eventTime || null
+      }
+      const res = await createSecurityRecord(payload)
+      if (res.success) {
+        setFormData({
+          personnelId: '',
+          event: '',
+          location: '',
+          status: 'قيد المراجعة',
+          eventTime: ''
+        })
+        setIsModalOpen(false)
+        fetchRecords()
+      } else {
+        setError(res.message || 'فشل تسجيل البلاغ الأمني')
+      }
+    } catch (err) {
+      const e = err as { response?: { data?: { message?: string } } }
+      setError(e.response?.data?.message || 'حدث خطأ أثناء تسجيل البلاغ')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
-  const columns: Column<SecurityLog>[] = [
+  const handleDelete = async (id: string): Promise<void> => {
+    if (!confirm('هل أنت متأكد من حذف هذا البلاغ الأمني؟')) return
+    try {
+      await deleteSecurityRecord(id)
+      fetchRecords()
+    } catch {
+      setError('فشل حذف البلاغ')
+    }
+  }
+
+  const columns: Column<SecurityRecord>[] = [
+    {
+      key: 'personnel',
+      label: 'الفرد المعني',
+      render: (row) => (
+        <div className="flex flex-col">
+          <span className="font-bold text-white">{row.personnel?.fullName ?? '—'}</span>
+          <span className="text-xs text-gray-400">
+            {row.personnel?.rank} / {row.personnel?.militaryId}
+          </span>
+        </div>
+      )
+    },
     { key: 'event', label: 'الحدث الأمني' },
-    { key: 'location', label: 'الموقع/النطاق' },
-    { key: 'person', label: 'الفرد المسؤول / المنفذ' },
-    { key: 'time', label: 'التوقيت' },
+    { key: 'location', label: 'الموقع / النطاق' },
+    { key: 'eventTime', label: 'التوقيت' },
     {
       key: 'status',
-      label: 'الإجراء المتخذ والحالة',
+      label: 'الحالة',
       render: (row) => {
         const isAlert = row.status.includes('الاحتجاز')
         const isSafe = row.status.includes('آمن') || row.status.includes('مكتمل')
@@ -99,6 +121,44 @@ export const SecurityDashboard: React.FC = () => {
           <Badge variant={isAlert ? 'danger' : isSafe ? 'success' : 'warning'}>{row.status}</Badge>
         )
       }
+    },
+    {
+      key: 'actions',
+      label: 'الإجراءات',
+      align: 'center' as const,
+      render: (row) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+          onClick={() => handleDelete(row.id)}
+          title="حذف البلاغ"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      )
+    }
+  ]
+
+  const stats = [
+    {
+      label: 'إجمالي البلاغات',
+      value: `${records.length} بلاغ`,
+      icon: KeyRound,
+      color: 'text-emerald-400'
+    },
+    {
+      label: 'بلاغات مفتوحة',
+      value: `${records.filter((r) => r.status.includes('الاحتجاز') || r.status.includes('قيد')).length} بلاغ`,
+      icon: AlertTriangle,
+      color: 'text-red-400'
+    },
+    { label: 'حواجز مراقبة', value: '6 نقاط', icon: Radio, color: 'text-blue-400' },
+    {
+      label: 'مستوى التشفير',
+      value: 'درجة أولي (أ)',
+      icon: Lock,
+      color: 'text-purple-400'
     }
   ]
 
@@ -120,6 +180,12 @@ export const SecurityDashboard: React.FC = () => {
           تسجيل بلاغ أمني عاجل
         </Button>
       </div>
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm font-bold">
+          {error}
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -145,7 +211,7 @@ export const SecurityDashboard: React.FC = () => {
       {/* Table */}
       <div className="flex flex-col gap-4">
         <h3 className="text-lg font-bold text-white">سجل البلاغات والعمليات الأمنية اليومية</h3>
-        <Table columns={columns} data={logs} />
+        <Table columns={columns} data={records} loading={loading} />
       </div>
 
       {/* Modal */}
@@ -155,16 +221,20 @@ export const SecurityDashboard: React.FC = () => {
         title="تسجيل بلاغ أمني عاجل"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+            <Button variant="secondary" onClick={() => setIsModalOpen(false)} disabled={submitting}>
               إلغاء
             </Button>
-            <Button variant="danger" onClick={handleSubmit}>
+            <Button variant="danger" onClick={handleSubmit} loading={submitting}>
               تسجيل البلاغ
             </Button>
           </>
         }
       >
         <div className="flex flex-col gap-4">
+          <PersonnelSelect
+            value={formData.personnelId}
+            onChange={(v) => setFormData((p) => ({ ...p, personnelId: v }))}
+          />
           <Input
             label="وصف الحادثة / الحدث الأمني *"
             value={formData.event}
@@ -178,10 +248,10 @@ export const SecurityDashboard: React.FC = () => {
             placeholder="مثال: البوابة الرئيسية الشرقية"
           />
           <Input
-            label="الفرد المسؤول / المتورط"
-            value={formData.person}
-            onChange={(e) => setFormData((p) => ({ ...p, person: e.target.value }))}
-            placeholder="مثال: نقيب / أحمد سعيد"
+            label="التوقيت"
+            value={formData.eventTime}
+            onChange={(e) => setFormData((p) => ({ ...p, eventTime: e.target.value }))}
+            placeholder="مثال: 14:22"
           />
           <Input
             label="الحالة"

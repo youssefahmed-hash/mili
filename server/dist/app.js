@@ -10,6 +10,9 @@ const personnel_routes_1 = __importDefault(require("./modules/personnel/personne
 const documents_routes_1 = __importDefault(require("./modules/documents/documents.routes"));
 const vacations_routes_1 = __importDefault(require("./modules/vacations/vacations.routes"));
 const forms_routes_1 = __importDefault(require("./modules/forms/forms.routes"));
+const clinic_routes_1 = __importDefault(require("./modules/clinic/clinic.routes"));
+const operations_routes_1 = __importDefault(require("./modules/operations/operations.routes"));
+const security_routes_1 = __importDefault(require("./modules/security/security.routes"));
 const errorHandler_1 = require("./middlewares/errorHandler");
 const app = (0, express_1.default)();
 // Config CORS
@@ -32,6 +35,9 @@ app.use("/api/personnel", personnel_routes_1.default);
 app.use("/api/documents", documents_routes_1.default);
 app.use("/api/vacations", vacations_routes_1.default);
 app.use("/api/forms", forms_routes_1.default);
+app.use("/api/clinic", clinic_routes_1.default);
+app.use("/api/operations", operations_routes_1.default);
+app.use("/api/security", security_routes_1.default);
 // Global Error Handler
 app.use(errorHandler_1.errorHandler);
 exports.default = app;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Activity, Stethoscope, Heart, ShieldAlert, CheckCircle } from 'lucide-react'
 import { Table, Column } from '../ui/Table'
 import { Badge } from '../ui/Badge'
@@ -6,112 +6,87 @@ import { Button } from '../ui/Button'
 import { Modal } from '../ui/Modal'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
-
-interface ClinicVisit {
-  id: number
-  name: string
-  rank: string
-  type: string
-  status: string
-  notes: string
-}
+import { PersonnelSelect } from '../ui/PersonnelSelect'
+import { getClinicRecords, createClinicRecord, deleteClinicRecord } from '../../api/clinic.api'
+import type { ClinicRecord } from '../../types/personnel'
 
 export const ClinicDashboard: React.FC = () => {
-  const [visits, setVisits] = useState<ClinicVisit[]>([
-    {
-      id: 1,
-      name: 'أحمد محمد علي',
-      rank: 'رائد',
-      type: 'كشف دوري',
-      status: 'لائق',
-      notes: 'مستوفى اللياقة'
-    },
-    {
-      id: 2,
-      name: 'خالد سعيد عمر',
-      rank: 'ملازم أول',
-      type: 'كشف رمد',
-      status: 'راحة 48 ساعة',
-      notes: 'التهاب بالقرنية'
-    },
-    {
-      id: 3,
-      name: 'محمود حسن مصطفى',
-      rank: 'عريف',
-      type: 'كشف عظام',
-      status: 'غير لائق مؤقتاً',
-      notes: 'كسر بالقدم اليسرى'
-    },
-    {
-      id: 4,
-      name: 'ياسر طارق عبد الله',
-      rank: 'مساعد أول',
-      type: 'كشف باطنة',
-      status: 'لائق',
-      notes: 'متابعة ضغط الدم'
-    }
-  ])
-
+  const [records, setRecords] = useState<ClinicRecord[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
-    name: '',
-    rank: '',
-    type: 'كشف دوري',
-    status: 'لائق',
-    notes: ''
+    personnelId: '',
+    examinationType: 'كشف دوري',
+    medicalStatus: 'لائق',
+    notes: '',
+    examinationDate: ''
   })
 
-  const medicalStats = [
-    {
-      label: 'كشوفات اليوم',
-      value: `${visits.length} حالة`,
-      icon: Stethoscope,
-      color: 'text-blue-400'
-    },
-    {
-      label: 'محجوز بالعيادة',
-      value: `${visits.filter((v) => v.status.includes('راحة')).length} أفراد`,
-      icon: Heart,
-      color: 'text-red-400'
-    },
-    {
-      label: 'غير لائق طبيّاً',
-      value: `${visits.filter((v) => v.status.includes('غير لائق')).length} فرد`,
-      icon: ShieldAlert,
-      color: 'text-amber-400'
-    },
-    {
-      label: 'لائق للخدمة',
-      value: `${visits.filter((v) => v.status === 'لائق').length} أفراد`,
-      icon: CheckCircle,
-      color: 'text-emerald-400'
+  const fetchRecords = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await getClinicRecords()
+      if (res.success) {
+        setRecords(res.data)
+      }
+    } catch {
+      setError('فشل تحميل سجلات العيادة')
+    } finally {
+      setLoading(false)
     }
-  ]
+  }, [])
 
-  const handleSubmit = (): void => {
-    if (!formData.name.trim()) return
-    setVisits((prev) => [...prev, { ...formData, id: Date.now() }])
-    setFormData({ name: '', rank: '', type: 'كشف دوري', status: 'لائق', notes: '' })
-    setIsModalOpen(false)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchRecords()
+  }, [fetchRecords])
+
+  const handleSubmit = async (): Promise<void> => {
+    if (!formData.personnelId) {
+      setError('الرجاء اختيار الفرد المريض')
+      return
+    }
+    setSubmitting(true)
+    setError(null)
+    try {
+      const payload = {
+        ...formData,
+        examinationDate: formData.examinationDate || null
+      }
+      const res = await createClinicRecord(payload)
+      if (res.success) {
+        setFormData({
+          personnelId: '',
+          examinationType: 'كشف دوري',
+          medicalStatus: 'لائق',
+          notes: '',
+          examinationDate: ''
+        })
+        setIsModalOpen(false)
+        fetchRecords()
+      } else {
+        setError(res.message || 'فشل تسجيل الكشف الطبي')
+      }
+    } catch (err) {
+      const e = err as { response?: { data?: { message?: string } } }
+      setError(e.response?.data?.message || 'حدث خطأ أثناء تسجيل الكشف')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
-  const columns: Column<ClinicVisit>[] = [
-    { key: 'name', label: 'الاسم بالكامل' },
-    { key: 'rank', label: 'الرتبة' },
-    { key: 'type', label: 'نوع الكشف/العيادة' },
-    {
-      key: 'status',
-      label: 'الحالة الطبية والقرار',
-      render: (row) => {
-        const isFit = row.status === 'لائق'
-        const isRest = row.status.includes('راحة')
-        return (
-          <Badge variant={isFit ? 'success' : isRest ? 'warning' : 'danger'}>{row.status}</Badge>
-        )
-      }
-    },
-    { key: 'notes', label: 'الملاحظات الطبية' }
-  ]
+  const handleDelete = async (id: string): Promise<void> => {
+    if (!confirm('هل أنت متأكد من حذف هذا السجل الطبي؟')) return
+    try {
+      await deleteClinicRecord(id)
+      fetchRecords()
+    } catch {
+      setError('فشل حذف السجل الطبي')
+    }
+  }
 
   const typeOptions = [
     { value: 'كشف دوري', label: 'كشف دوري' },
@@ -130,17 +105,77 @@ export const ClinicDashboard: React.FC = () => {
     { value: 'غير لائق نهائياً', label: 'غير لائق نهائياً' }
   ]
 
-  const rankOptions = [
-    { value: 'جندي', label: 'جندي' },
-    { value: 'عريف', label: 'عريف' },
-    { value: 'رقيب', label: 'رقيب' },
-    { value: 'مساعد', label: 'مساعد' },
-    { value: 'مساعد أول', label: 'مساعد أول' },
-    { value: 'ملازم', label: 'ملازم' },
-    { value: 'ملازم أول', label: 'ملازم أول' },
-    { value: 'نقيب', label: 'نقيب' },
-    { value: 'رائد', label: 'رائد' },
-    { value: 'مقدم', label: 'مقدم' }
+  const columns: Column<ClinicRecord>[] = [
+    {
+      key: 'personnel',
+      label: 'الفرد',
+      render: (row) => (
+        <div className="flex flex-col">
+          <span className="font-bold text-white">{row.personnel?.fullName ?? '—'}</span>
+          <span className="text-xs text-gray-400">
+            {row.personnel?.rank} / {row.personnel?.militaryId}
+          </span>
+        </div>
+      )
+    },
+    { key: 'examinationType', label: 'نوع الكشف' },
+    {
+      key: 'medicalStatus',
+      label: 'القرار الطبي',
+      render: (row) => {
+        const isFit = row.medicalStatus === 'لائق'
+        const isRest = row.medicalStatus.includes('راحة')
+        return (
+          <Badge variant={isFit ? 'success' : isRest ? 'warning' : 'danger'}>
+            {row.medicalStatus}
+          </Badge>
+        )
+      }
+    },
+    { key: 'notes', label: 'الملاحظات الطبية' },
+    {
+      key: 'actions',
+      label: 'الإجراءات',
+      align: 'center' as const,
+      render: (row) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+          onClick={() => handleDelete(row.id)}
+          title="حذف السجل"
+        >
+          حذف
+        </Button>
+      )
+    }
+  ]
+
+  const medicalStats = [
+    {
+      label: 'كشوفات اليوم',
+      value: `${records.length} حالة`,
+      icon: Stethoscope,
+      color: 'text-blue-400'
+    },
+    {
+      label: 'محجوز بالعيادة',
+      value: `${records.filter((v) => v.medicalStatus.includes('راحة')).length} أفراد`,
+      icon: Heart,
+      color: 'text-red-400'
+    },
+    {
+      label: 'غير لائق طبيّاً',
+      value: `${records.filter((v) => v.medicalStatus.includes('غير لائق')).length} فرد`,
+      icon: ShieldAlert,
+      color: 'text-amber-400'
+    },
+    {
+      label: 'لائق للخدمة',
+      value: `${records.filter((v) => v.medicalStatus === 'لائق').length} أفراد`,
+      icon: CheckCircle,
+      color: 'text-emerald-400'
+    }
   ]
 
   return (
@@ -161,6 +196,12 @@ export const ClinicDashboard: React.FC = () => {
           تسجيل كشف طبي جديد
         </Button>
       </div>
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm font-bold">
+          {error}
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -185,13 +226,8 @@ export const ClinicDashboard: React.FC = () => {
 
       {/* Table Area */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-white">جدول المراجعات والكشوفات الطبية اليومية</h3>
-          <span className="text-xs text-gray-400 font-semibold">
-            تاريخ اليوم: {new Date().toLocaleDateString('ar-EG')}
-          </span>
-        </div>
-        <Table columns={columns} data={visits} />
+        <h3 className="text-lg font-bold text-white">جدول المراجعات والكشوفات الطبية اليومية</h3>
+        <Table columns={columns} data={records} loading={loading} />
       </div>
 
       {/* Modal */}
@@ -201,39 +237,37 @@ export const ClinicDashboard: React.FC = () => {
         title="تسجيل كشف طبي جديد"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+            <Button variant="secondary" onClick={() => setIsModalOpen(false)} disabled={submitting}>
               إلغاء
             </Button>
-            <Button variant="primary" onClick={handleSubmit}>
+            <Button variant="primary" onClick={handleSubmit} loading={submitting}>
               حفظ الكشف
             </Button>
           </>
         }
       >
         <div className="flex flex-col gap-4">
-          <Input
-            label="اسم الفرد بالكامل"
-            value={formData.name}
-            onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-            placeholder="مثال: أحمد محمد علي"
-          />
-          <Select
-            label="الرتبة"
-            options={rankOptions}
-            value={formData.rank}
-            onChange={(e) => setFormData((p) => ({ ...p, rank: e.target.value }))}
+          <PersonnelSelect
+            value={formData.personnelId}
+            onChange={(v) => setFormData((p) => ({ ...p, personnelId: v }))}
           />
           <Select
             label="نوع الكشف الطبي"
             options={typeOptions}
-            value={formData.type}
-            onChange={(e) => setFormData((p) => ({ ...p, type: e.target.value }))}
+            value={formData.examinationType}
+            onChange={(e) => setFormData((p) => ({ ...p, examinationType: e.target.value }))}
           />
           <Select
             label="القرار الطبي"
             options={statusOptions}
-            value={formData.status}
-            onChange={(e) => setFormData((p) => ({ ...p, status: e.target.value }))}
+            value={formData.medicalStatus}
+            onChange={(e) => setFormData((p) => ({ ...p, medicalStatus: e.target.value }))}
+          />
+          <Input
+            label="تاريخ الكشف"
+            type="date"
+            value={formData.examinationDate}
+            onChange={(e) => setFormData((p) => ({ ...p, examinationDate: e.target.value }))}
           />
           <Input
             label="الملاحظات الطبية"
