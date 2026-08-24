@@ -2,14 +2,32 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.personnelController = exports.PersonnelController = void 0;
 const personnel_service_1 = require("./personnel.service");
+const documents_service_1 = require("../documents/documents.service");
 const apiResponse_1 = require("../../utils/apiResponse");
+const ATTACHMENT_DOC_TYPES = [
+    { field: "cardImage", type: "personnelCard" },
+    { field: "carnetImage", type: "personnelCarnet" },
+    { field: "formImage", type: "personnelForm" }
+];
+async function createAttachmentDocuments(personnelId, files) {
+    for (const { field, type } of ATTACHMENT_DOC_TYPES) {
+        const file = files?.[field]?.[0];
+        if (file) {
+            await documents_service_1.documentsService.create({
+                personnelId,
+                type,
+                fileUrl: `/uploads/documents/${file.filename}`
+            });
+        }
+    }
+}
 class PersonnelController {
     async getAll(req, res, next) {
         try {
-            const { search, category, rank, unit, status, page, limit } = req.query;
+            const { search, ranks, rank, unit, status, page, limit } = req.query;
             const filters = {
                 search: search,
-                category: category,
+                ranks: ranks,
                 rank: rank,
                 unit: unit,
                 status: status,
@@ -44,11 +62,12 @@ class PersonnelController {
     async create(req, res, next) {
         try {
             const data = req.body;
-            // If file uploaded via Multer
-            if (req.file) {
-                data.photo = `/uploads/photos/${req.file.filename}`;
+            const files = req.files;
+            if (files?.photo?.[0]) {
+                data.photo = `/uploads/photos/${files.photo[0].filename}`;
             }
             const personnel = await personnel_service_1.personnelService.create(data);
+            await createAttachmentDocuments(personnel.id, files);
             return (0, apiResponse_1.successResponse)(res, personnel, "تم إضافة الفرد العسكري بنجاح", 201);
         }
         catch (err) {
@@ -59,11 +78,12 @@ class PersonnelController {
         try {
             const { id } = req.params;
             const data = req.body;
-            // If file uploaded via Multer
-            if (req.file) {
-                data.photo = `/uploads/photos/${req.file.filename}`;
+            const files = req.files;
+            if (files?.photo?.[0]) {
+                data.photo = `/uploads/photos/${files.photo[0].filename}`;
             }
             const personnel = await personnel_service_1.personnelService.update(id, data);
+            await createAttachmentDocuments(personnel.id, files);
             return (0, apiResponse_1.successResponse)(res, personnel, "تم تحديث بيانات الفرد العسكري بنجاح");
         }
         catch (err) {

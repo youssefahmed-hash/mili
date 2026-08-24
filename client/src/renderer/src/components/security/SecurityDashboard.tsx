@@ -6,6 +6,8 @@ import { Button } from '../ui/Button'
 import { Modal } from '../ui/Modal'
 import { Input } from '../ui/Input'
 import { PersonnelSelect } from '../ui/PersonnelSelect'
+import { Tabs } from '../ui/Tabs'
+import { RECORD_TABS, TAB_RANK_MAP } from '../../constants/categories'
 import {
   getSecurityRecords,
   createSecurityRecord,
@@ -15,6 +17,7 @@ import type { SecurityRecord } from '../../types/personnel'
 
 export const SecurityDashboard: React.FC = () => {
   const [records, setRecords] = useState<SecurityRecord[]>([])
+  const [activeTab, setActiveTab] = useState<string>('all')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -140,16 +143,20 @@ export const SecurityDashboard: React.FC = () => {
     }
   ]
 
+  const visibleRecords = records.filter(
+    (r) => !!r.personnel && TAB_RANK_MAP[activeTab].includes(r.personnel.rank)
+  )
+
   const stats = [
     {
       label: 'إجمالي البلاغات',
-      value: `${records.length} بلاغ`,
+      value: `${visibleRecords.length} بلاغ`,
       icon: KeyRound,
       color: 'text-emerald-400'
     },
     {
       label: 'بلاغات مفتوحة',
-      value: `${records.filter((r) => r.status.includes('الاحتجاز') || r.status.includes('قيد')).length} بلاغ`,
+      value: `${visibleRecords.filter((r) => r.status.includes('الاحتجاز') || r.status.includes('قيد')).length} بلاغ`,
       icon: AlertTriangle,
       color: 'text-red-400'
     },
@@ -181,6 +188,9 @@ export const SecurityDashboard: React.FC = () => {
         </Button>
       </div>
 
+      {/* Category Tabs */}
+      <Tabs tabs={RECORD_TABS} activeTab={activeTab} onChange={setActiveTab} />
+
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm font-bold">
           {error}
@@ -211,7 +221,7 @@ export const SecurityDashboard: React.FC = () => {
       {/* Table */}
       <div className="flex flex-col gap-4">
         <h3 className="text-lg font-bold text-white">سجل البلاغات والعمليات الأمنية اليومية</h3>
-        <Table columns={columns} data={records} loading={loading} />
+        <Table columns={columns} data={visibleRecords} loading={loading} />
       </div>
 
       {/* Modal */}
@@ -234,6 +244,7 @@ export const SecurityDashboard: React.FC = () => {
           <PersonnelSelect
             value={formData.personnelId}
             onChange={(v) => setFormData((p) => ({ ...p, personnelId: v }))}
+            ranks={TAB_RANK_MAP[activeTab].join(',')}
           />
           <Input
             label="وصف الحادثة / الحدث الأمني *"

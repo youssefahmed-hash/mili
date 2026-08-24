@@ -7,9 +7,34 @@ import path from "path";
 export class PersonnelService {
     private repository = AppDataSource.getRepository(Personnel);
 
+    private static RANK_TO_CATEGORY: Record<string, PersonnelCategory> = {
+        'جندي': 'soldier',
+        'عريف': 'non_commissioned_officer',
+        'رقيب': 'non_commissioned_officer',
+        'رقيب أول': 'non_commissioned_officer',
+        'مساعد': 'non_commissioned_officer',
+        'مساعد أول': 'non_commissioned_officer',
+        'ملازم': 'officer',
+        'ملازم أول': 'officer',
+        'نقيب': 'officer',
+        'رائد': 'officer',
+        'مقدم': 'officer',
+        'عقيد': 'officer',
+        'عميد': 'officer',
+        'لواء': 'officer'
+    };
+
+    private resolveCategory(data: Partial<Personnel>): PersonnelCategory {
+        if (data.category) return data.category as PersonnelCategory;
+        if (data.rank && PersonnelService.RANK_TO_CATEGORY[data.rank]) {
+            return PersonnelService.RANK_TO_CATEGORY[data.rank];
+        }
+        return 'soldier';
+    }
+
     async findAll(filters: {
         search?: string;
-        category?: PersonnelCategory;
+        ranks?: string;
         rank?: string;
         unit?: string;
         status?: PersonnelStatus;
@@ -31,8 +56,14 @@ export class PersonnelService {
         }
 
         // Apply filters
-        if (filters.category) {
-            queryBuilder.andWhere("personnel.category = :category", { category: filters.category });
+        if (filters.ranks) {
+            const ranks = (filters.ranks as string)
+                .split(",")
+                .map((r) => r.trim())
+                .filter(Boolean);
+            if (ranks.length) {
+                queryBuilder.andWhere("personnel.rank IN (:...ranks)", { ranks });
+            }
         }
         if (filters.rank) {
             queryBuilder.andWhere("personnel.rank = :rank", { rank: filters.rank });
@@ -65,7 +96,8 @@ export class PersonnelService {
     }
 
     async create(data: Partial<Personnel>) {
-        const newPersonnel = this.repository.create(data);
+        const payload = { ...data, category: this.resolveCategory(data) };
+        const newPersonnel = this.repository.create(payload);
         return await this.repository.save(newPersonnel);
     }
 
@@ -74,13 +106,15 @@ export class PersonnelService {
         if (!personnel) {
             throw new Error("الفرد العسكري غير موجود");
         }
-        
+
+        const payload = { ...data, category: this.resolveCategory(data) };
+
         // If updating photo and old photo exists, optionally remove old photo file
         if (data.photo && personnel.photo && data.photo !== personnel.photo) {
             this.deleteLocalFile(personnel.photo);
         }
 
-        this.repository.merge(personnel, data);
+        this.repository.merge(personnel, payload);
         return await this.repository.save(personnel);
     }
 
@@ -120,7 +154,7 @@ export class PersonnelService {
             // fileUrl format: /uploads/folder/filename
             if (fileUrl.startsWith("/uploads/")) {
                 const relativePath = fileUrl.replace("/uploads/", "");
-                const filePath = path.join(__dirname, "../../../uploads", relativePath);
+                const filePath = path.join(process.cwd(), "uploads", relativePath);
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
                 }

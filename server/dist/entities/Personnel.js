@@ -60,17 +60,49 @@ __decorate([
     __metadata("design:type", Object)
 ], Personnel.prototype, "birthPlace", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "residencePlace", void 0);
+__decorate([
     (0, typeorm_1.Column)({ type: "varchar", length: 100, nullable: true }),
     __metadata("design:type", Object)
 ], Personnel.prototype, "maritalStatus", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "varchar", length: 255 }),
-    __metadata("design:type", String)
-], Personnel.prototype, "unit", void 0);
+    (0, typeorm_1.Column)({ type: "varchar", length: 10, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "familyMembersCount", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 20, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "parentsLivingSeparately", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 20, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "fatherHealthStatus", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
     __metadata("design:type", Object)
-], Personnel.prototype, "department", void 0);
+], Personnel.prototype, "fatherWork", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 50, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "fatherPhone", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 20, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "motherHealthStatus", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "motherWork", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 50, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "motherPhone", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255 }),
+    __metadata("design:type", String)
+], Personnel.prototype, "unit", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
     __metadata("design:type", Object)
@@ -131,6 +163,26 @@ __decorate([
     (0, typeorm_1.Column)({ type: "text", nullable: true }),
     __metadata("design:type", Object)
 ], Personnel.prototype, "notes", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "workBeforeEnlistment", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "text", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "behaviorInUnit", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "subordinates", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "supervisor", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "batchDate", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)

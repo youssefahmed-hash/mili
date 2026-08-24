@@ -9,6 +9,7 @@ interface PersonnelSelectProps {
   onChange: (value: string) => void
   error?: string
   required?: boolean
+  ranks?: string
 }
 
 export const PersonnelSelect: React.FC<PersonnelSelectProps> = ({
@@ -16,7 +17,8 @@ export const PersonnelSelect: React.FC<PersonnelSelectProps> = ({
   value,
   onChange,
   error,
-  required = true
+  required = true,
+  ranks
 }) => {
   const [options, setOptions] = useState<{ value: string; label: string }[]>([])
   const [loading, setLoading] = useState(false)
@@ -25,7 +27,7 @@ export const PersonnelSelect: React.FC<PersonnelSelectProps> = ({
     const fetchPersonnel = async (): Promise<void> => {
       setLoading(true)
       try {
-        const res = await getAllPersonnel()
+        const res = await getAllPersonnel(ranks)
         if (res.success && Array.isArray(res.data)) {
           setOptions(
             res.data.map((p: Personnel) => ({
@@ -41,7 +43,7 @@ export const PersonnelSelect: React.FC<PersonnelSelectProps> = ({
       }
     }
     fetchPersonnel()
-  }, [])
+  }, [ranks])
 
   return (
     <Select

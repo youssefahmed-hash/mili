@@ -41,14 +41,38 @@ export class Personnel {
     @Column({ type: "varchar", length: 255, nullable: true })
     birthPlace!: string | null;
 
+    @Column({ type: "varchar", length: 255, nullable: true })
+    residencePlace!: string | null;
+
     @Column({ type: "varchar", length: 100, nullable: true })
     maritalStatus!: string | null;
 
-    @Column({ type: "varchar", length: 255 })
-    unit!: string;
+    @Column({ type: "varchar", length: 10, nullable: true })
+    familyMembersCount!: string | null;
+
+    @Column({ type: "varchar", length: 20, nullable: true })
+    parentsLivingSeparately!: string | null;
+
+    @Column({ type: "varchar", length: 20, nullable: true })
+    fatherHealthStatus!: string | null;
 
     @Column({ type: "varchar", length: 255, nullable: true })
-    department!: string | null;
+    fatherWork!: string | null;
+
+    @Column({ type: "varchar", length: 50, nullable: true })
+    fatherPhone!: string | null;
+
+    @Column({ type: "varchar", length: 20, nullable: true })
+    motherHealthStatus!: string | null;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    motherWork!: string | null;
+
+    @Column({ type: "varchar", length: 50, nullable: true })
+    motherPhone!: string | null;
+
+    @Column({ type: "varchar", length: 255 })
+    unit!: string;
 
     @Column({ type: "varchar", length: 255, nullable: true })
     specialization!: string | null;
@@ -95,6 +119,21 @@ export class Personnel {
 
     @Column({ type: "text", nullable: true })
     notes!: string | null;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    workBeforeEnlistment!: string | null;
+
+    @Column({ type: "text", nullable: true })
+    behaviorInUnit!: string | null;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    subordinates!: string | null;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    supervisor!: string | null;
+
+    @Column({ type: "date", nullable: true })
+    batchDate!: Date | null;
 
     @CreateDateColumn()
     createdAt!: Date;

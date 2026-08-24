@@ -25,7 +25,7 @@ app.use((0, cors_1.default)({
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 // Serve local upload files statically
-app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "../uploads")));
+app.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "uploads")));
 // Health check endpoint
 app.get("/api/health", (req, res) => {
     res.status(200).json({ status: "OK", timestamp: new Date() });

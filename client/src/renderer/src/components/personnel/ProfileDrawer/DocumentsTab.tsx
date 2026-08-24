@@ -5,6 +5,7 @@ import { Select } from '../../ui/Select'
 import { Button } from '../../ui/Button'
 import { FileUp, Eye, Trash2, FileText } from 'lucide-react'
 import type { Personnel, Document } from '../../../types/personnel'
+import { resolveFileUrl } from '../../../utils/fileUrl'
 
 interface DocumentsTabProps {
   data: Personnel
@@ -23,7 +24,10 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({ data }) => {
     militaryIdCard: 'الهوية العسكرية',
     appointmentDocuments: 'وثائق التعيين',
     promotionDocuments: 'قرارات الترقيات',
-    certificates: 'شهادات ودورات'
+    certificates: 'شهادات ودورات',
+    personnelCard: 'صورة البطاقة',
+    personnelCarnet: 'صورة الكارنيه',
+    personnelForm: 'صورة النموذج'
   }
 
   const fetchDocs = useCallback(async () => {
@@ -125,7 +129,7 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({ data }) => {
       render: (row) => (
         <div className="flex items-center justify-center gap-2">
           <a
-            href={`http://localhost:5000${row.fileUrl}`}
+            href={resolveFileUrl(row.fileUrl) || '#'}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center justify-center p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all"

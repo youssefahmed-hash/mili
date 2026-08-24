@@ -6,20 +6,34 @@ import { PersonnelTable } from './PersonnelTable'
 import { PersonnelFormModal } from './PersonnelFormModal'
 import { DeleteConfirmModal } from './DeleteConfirmModal'
 import { ProfileDrawer } from './ProfileDrawer/ProfileDrawer'
+import { Tabs } from '../ui/Tabs'
+import { CATEGORY_TABS, TAB_RANK_MAP } from '../../constants/categories'
 import type { Personnel } from '../../types/personnel'
 
 export const PersonnelModule: React.FC = () => {
   const { searchQuery } = useAppStore()
-  const { personnelList, fetchPersonnelList, pagination, loading, filters, setSelectedPersonnel } =
-    usePersonnelStore()
+  const {
+    personnelList,
+    fetchPersonnelList,
+    pagination,
+    loading,
+    filters,
+    setFilters,
+    setSelectedPersonnel
+  } = usePersonnelStore()
 
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<string>('soldier')
 
   const [editTarget, setEditTarget] = useState<Personnel | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Personnel | null>(null)
   const [viewTargetId, setViewTargetId] = useState<string | null>(null)
+
+  useEffect(() => {
+    setFilters({ ranks: TAB_RANK_MAP[activeTab].join(',') })
+  }, [activeTab, setFilters])
 
   useEffect(() => {
     fetchPersonnelList(searchQuery, 1)
@@ -60,6 +74,9 @@ export const PersonnelModule: React.FC = () => {
           الأفراد الخاصة بهم.
         </p>
       </div>
+
+      {/* Category Tabs */}
+      <Tabs tabs={CATEGORY_TABS} activeTab={activeTab} onChange={setActiveTab} />
 
       {/* Toolbar Filters + Add button */}
       <PersonnelToolbar onAddClick={handleAddClick} />

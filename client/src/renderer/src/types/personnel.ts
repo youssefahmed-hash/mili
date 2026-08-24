@@ -11,9 +11,17 @@ export interface Personnel {
   nationalId: string
   birthDate: string
   birthPlace: string | null
+  residencePlace: string | null
   maritalStatus: string | null
+  familyMembersCount: string | null
+  parentsLivingSeparately: string | null
+  fatherHealthStatus: string | null
+  fatherWork: string | null
+  fatherPhone: string | null
+  motherHealthStatus: string | null
+  motherWork: string | null
+  motherPhone: string | null
   unit: string
-  department: string | null
   specialization: string | null
   appointmentDate: string | null
   serviceStartDate: string | null
@@ -28,6 +36,11 @@ export interface Personnel {
   lastPromotionDate: string | null
   nextPromotionDate: string | null
   notes: string | null
+  workBeforeEnlistment: string | null
+  behaviorInUnit: string | null
+  subordinates: string | null
+  supervisor: string | null
+  batchDate: string | null
   createdAt: string
   updatedAt: string
   documents?: Document[]
@@ -73,7 +86,7 @@ export interface ClinicRecord {
   examinationDate: string | null
   createdAt: string
   personnelId: string
-  personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank'>
+  personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank' | 'category'>
 }
 
 export interface OperationRecord {
@@ -84,7 +97,7 @@ export interface OperationRecord {
   missionDate: string | null
   createdAt: string
   personnelId: string
-  personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank'>
+  personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank' | 'category'>
 }
 
 export interface SecurityRecord {
@@ -95,7 +108,7 @@ export interface SecurityRecord {
   eventTime: string | null
   createdAt: string
   personnelId: string
-  personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank'>
+  personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank' | 'category'>
 }
 
 export interface ApiResponse<T = unknown> {

@@ -6,6 +6,14 @@ import { Select } from '../ui/Select'
 import { Button } from '../ui/Button'
 import { Upload } from 'lucide-react'
 import type { Personnel } from '../../types/personnel'
+import { resolveFileUrl, isPdf } from '../../utils/fileUrl'
+import { TAB_RANK_MAP } from '../../constants/categories'
+
+const ATTACHMENTS = [
+  { key: 'cardImage', label: 'صورة البطاقة', hint: 'صورة أو ملف PDF' },
+  { key: 'carnetImage', label: 'صورة الكارنيه', hint: 'صورة أو ملف PDF' },
+  { key: 'formImage', label: 'صورة النموذج', hint: 'صورة أو ملف PDF' }
+] as const
 
 interface PersonnelFormModalProps {
   isOpen: boolean
@@ -23,15 +31,22 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
 
   // Local form states
   const [fullName, setFullName] = useState('')
-  const [category, setCategory] = useState('soldier')
   const [rank, setRank] = useState('جندي')
   const [militaryId, setMilitaryId] = useState('')
   const [nationalId, setNationalId] = useState('')
   const [birthDate, setBirthDate] = useState('')
   const [birthPlace, setBirthPlace] = useState('')
+  const [residencePlace, setResidencePlace] = useState('')
   const [maritalStatus, setMaritalStatus] = useState('أعزب')
+  const [familyMembersCount, setFamilyMembersCount] = useState('')
+  const [parentsLivingSeparately, setParentsLivingSeparately] = useState('معاً')
+  const [fatherHealthStatus, setFatherHealthStatus] = useState('حي')
+  const [fatherWork, setFatherWork] = useState('')
+  const [fatherPhone, setFatherPhone] = useState('')
+  const [motherHealthStatus, setMotherHealthStatus] = useState('حي')
+  const [motherWork, setMotherWork] = useState('')
+  const [motherPhone, setMotherPhone] = useState('')
   const [unit, setUnit] = useState('الكتيبة الأولى')
-  const [department, setDepartment] = useState('')
   const [specialization, setSpecialization] = useState('')
   const [appointmentDate, setAppointmentDate] = useState('')
   const [serviceStartDate, setServiceStartDate] = useState('')
@@ -46,9 +61,27 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
   const [lastPromotionDate, setLastPromotionDate] = useState('')
   const [nextPromotionDate, setNextPromotionDate] = useState('')
   const [notes, setNotes] = useState('')
+  const [workBeforeEnlistment, setWorkBeforeEnlistment] = useState('')
+  const [behaviorInUnit, setBehaviorInUnit] = useState('')
+  const [subordinates, setSubordinates] = useState('')
+  const [supervisor, setSupervisor] = useState('')
+  const [batchDate, setBatchDate] = useState('')
 
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+
+  const [attachments, setAttachments] = useState<Record<string, File | null>>({})
+  const [attachmentPreviews, setAttachmentPreviews] = useState<Record<string, string | null>>({})
+
+  const handleAttachment =
+    (key: string) =>
+    (e: React.ChangeEvent<HTMLInputElement>): void => {
+      const file = e.target.files && e.target.files[0]
+      if (file) {
+        setAttachments((prev) => ({ ...prev, [key]: file }))
+        setAttachmentPreviews((prev) => ({ ...prev, [key]: URL.createObjectURL(file) }))
+      }
+    }
 
   // Validation errors state
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -59,15 +92,27 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
     if (target) {
       /* eslint-disable react-hooks/set-state-in-effect */
       setFullName(target.fullName || '')
-      setCategory(target.category || 'soldier')
       setRank(target.rank || 'جندي')
       setMilitaryId(target.militaryId || '')
       setNationalId(target.nationalId || '')
       setBirthDate(target.birthDate ? target.birthDate.split('T')[0] : '')
       setBirthPlace(target.birthPlace || '')
+      setResidencePlace(target.residencePlace || '')
       setMaritalStatus(target.maritalStatus || 'أعزب')
+      setWorkBeforeEnlistment(target.workBeforeEnlistment || '')
+      setBehaviorInUnit(target.behaviorInUnit || '')
+      setSubordinates(target.subordinates || '')
+      setSupervisor(target.supervisor || '')
+      setBatchDate(target.batchDate ? target.batchDate.split('T')[0] : '')
+      setFamilyMembersCount(target.familyMembersCount || '')
+      setParentsLivingSeparately(target.parentsLivingSeparately || 'معاً')
+      setFatherHealthStatus(target.fatherHealthStatus || 'حي')
+      setFatherWork(target.fatherWork || '')
+      setFatherPhone(target.fatherPhone || '')
+      setMotherHealthStatus(target.motherHealthStatus || 'حي')
+      setMotherWork(target.motherWork || '')
+      setMotherPhone(target.motherPhone || '')
       setUnit(target.unit || 'الكتيبة الأولى')
-      setDepartment(target.department || '')
       setSpecialization(target.specialization || '')
       setAppointmentDate(target.appointmentDate ? target.appointmentDate.split('T')[0] : '')
       setServiceStartDate(target.serviceStartDate ? target.serviceStartDate.split('T')[0] : '')
@@ -83,8 +128,19 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
       setNextPromotionDate(target.nextPromotionDate ? target.nextPromotionDate.split('T')[0] : '')
       setNotes(target.notes || '')
       if (target.photo) {
-        setPhotoPreview(`http://localhost:5000${target.photo}`)
+        setPhotoPreview(resolveFileUrl(target.photo))
       }
+      const docTypeToKey: Record<string, string> = {
+        personnelCard: 'cardImage',
+        personnelCarnet: 'carnetImage',
+        personnelForm: 'formImage'
+      }
+      ;(target.documents || []).forEach((doc) => {
+        const key = docTypeToKey[doc.type]
+        if (key) {
+          setAttachmentPreviews((prev) => ({ ...prev, [key]: resolveFileUrl(doc.fileUrl) }))
+        }
+      })
       /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [target])
@@ -107,7 +163,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
       errs.nationalId = 'الرقم القومي يجب أن يتكون من 14 رقماً'
     }
     if (!birthDate) errs.birthDate = 'تاريخ الميلاد مطلوب'
-    if (!unit.trim()) errs.unit = 'الوحدة العسكرية مطلوبة'
+    if (!unit.trim()) errs.unit = 'قسم / نقطه مطلوب'
 
     setErrors(errs)
     return Object.keys(errs).length === 0
@@ -119,20 +175,34 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
 
     setLoading(true)
 
+    const derivedCategory =
+      (Object.keys(TAB_RANK_MAP) as Array<keyof typeof TAB_RANK_MAP>).find((cat) =>
+        TAB_RANK_MAP[cat].includes(rank)
+      ) || 'soldier'
+
     const formData = new FormData()
     formData.append('fullName', fullName)
-    formData.append('category', category)
+    formData.append('category', derivedCategory)
     formData.append('rank', rank)
     formData.append('militaryId', militaryId)
     formData.append('nationalId', nationalId)
     formData.append('birthDate', birthDate)
     formData.append('birthPlace', birthPlace)
+    formData.append('residencePlace', residencePlace)
     formData.append('maritalStatus', maritalStatus)
+    if (familyMembersCount) formData.append('familyMembersCount', familyMembersCount)
+    formData.append('parentsLivingSeparately', parentsLivingSeparately)
+    formData.append('fatherHealthStatus', fatherHealthStatus)
+    formData.append('fatherWork', fatherWork)
+    formData.append('fatherPhone', fatherPhone)
+    formData.append('motherHealthStatus', motherHealthStatus)
+    formData.append('motherWork', motherWork)
+    formData.append('motherPhone', motherPhone)
     formData.append('unit', unit)
-    formData.append('department', department)
     formData.append('specialization', specialization)
     if (appointmentDate) formData.append('appointmentDate', appointmentDate)
     if (serviceStartDate) formData.append('serviceStartDate', serviceStartDate)
+    if (batchDate) formData.append('batchDate', batchDate)
     formData.append('status', status)
     formData.append('education', education)
     formData.append('phone', phone)
@@ -144,10 +214,21 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
     if (lastPromotionDate) formData.append('lastPromotionDate', lastPromotionDate)
     if (nextPromotionDate) formData.append('nextPromotionDate', nextPromotionDate)
     formData.append('notes', notes)
+    formData.append('workBeforeEnlistment', workBeforeEnlistment)
+    formData.append('behaviorInUnit', behaviorInUnit)
+    formData.append('subordinates', subordinates)
+    formData.append('supervisor', supervisor)
 
     if (photoFile) {
       formData.append('photo', photoFile)
     }
+
+    ATTACHMENTS.forEach(({ key }) => {
+      const file = attachments[key]
+      if (file) {
+        formData.append(key, file)
+      }
+    })
 
     let success = false
     if (isEdit && target) {
@@ -162,12 +243,6 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
       onClose()
     }
   }
-
-  const categoryOptions = [
-    { value: 'soldier', label: 'جندي' },
-    { value: 'non_commissioned_officer', label: 'ضابط صف' },
-    { value: 'officer', label: 'ضابط' }
-  ]
 
   const statusOptions = [
     { value: 'على رأس العمل', label: 'على رأس العمل' },
@@ -198,6 +273,16 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
     { value: 'متزوج', label: 'متزوج' },
     { value: 'مطلق', label: 'مطلق' },
     { value: 'أرمل', label: 'أرمل' }
+  ]
+
+  const healthOptions = [
+    { value: 'حي', label: 'حي' },
+    { value: 'متوفي', label: 'متوفي' }
+  ]
+
+  const parentsLivingOptions = [
+    { value: 'معاً', label: 'معاً (في سكن واحد)' },
+    { value: 'منفصلين', label: 'منفصلين (سكن مختلف)' }
   ]
 
   const unitOptions = [
@@ -299,16 +384,147 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                 onChange={(e) => setBirthPlace(e.target.value)}
                 placeholder="المحافظة / المدينة"
               />
-              <div className="md:col-span-2">
-                <Select
-                  label="الحالة الاجتماعية"
-                  options={maritalOptions}
-                  value={maritalStatus}
-                  onChange={(e) => setMaritalStatus(e.target.value)}
-                />
-              </div>
+              <Input
+                label="محل الإقامة"
+                value={residencePlace}
+                onChange={(e) => setResidencePlace(e.target.value)}
+                placeholder="المحافظة / المدينة / العنوان"
+              />
             </div>
           </div>
+        </div>
+
+        {/* Section: Attached documents (card / carnet / form) */}
+        <div>
+          <h4 className="text-sm font-bold text-military-accent uppercase tracking-wider border-b border-white/5 pb-2 mb-4 text-start">
+            الوثائق المرفقة بالملف (صورة أو PDF)
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {ATTACHMENTS.map(({ key, label, hint }) => {
+              const preview = attachmentPreviews[key]
+              const file = attachments[key]
+              const pdf = file ? file.type === 'application/pdf' : preview ? isPdf(preview) : false
+              return (
+                <div key={key} className="flex flex-col items-center gap-2">
+                  <label className="text-sm font-semibold text-gray-300">{label}</label>
+                  <div className="relative h-28 w-28 rounded-xl bg-military-900 border border-white/10 flex items-center justify-center overflow-hidden group shadow-lg">
+                    {preview ? (
+                      pdf ? (
+                        <span className="text-[11px] text-gray-400 text-center px-1">
+                          ملف PDF مرفق
+                        </span>
+                      ) : (
+                        <img src={preview} alt={label} className="h-full w-full object-cover" />
+                      )
+                    ) : (
+                      <Upload className="h-7 w-7 text-gray-500 group-hover:text-gray-300 transition-colors" />
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      onChange={handleAttachment(key)}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      title={label}
+                    />
+                  </div>
+                  <span className="text-[10px] text-gray-500">{hint}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Section: Social & Family Info */}
+        <div>
+          <h4 className="text-sm font-bold text-military-accent uppercase tracking-wider border-b border-white/5 pb-2 mb-4 text-start">
+            البيانات الاجتماعية والأسرية
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Select
+              label="الحالة الاجتماعية"
+              options={maritalOptions}
+              value={maritalStatus}
+              onChange={(e) => setMaritalStatus(e.target.value)}
+            />
+            <Input
+              label="عدد أفراد الأسرة (الحالة المدنية)"
+              type="number"
+              min={0}
+              value={familyMembersCount}
+              onChange={(e) => setFamilyMembersCount(e.target.value)}
+              placeholder="مثال: 5"
+            />
+            <Select
+              label="سكن الوالد والوالدة"
+              options={parentsLivingOptions}
+              value={parentsLivingSeparately}
+              onChange={(e) => setParentsLivingSeparately(e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            {/* Father */}
+            <div className="glassmorphism p-4 rounded-xl flex flex-col gap-4">
+              <h5 className="text-sm font-bold text-gray-200 border-b border-white/5 pb-2 text-start">
+                بيانات الوالد
+              </h5>
+              <Select
+                label="الحالة الصحية"
+                options={healthOptions}
+                value={fatherHealthStatus}
+                onChange={(e) => setFatherHealthStatus(e.target.value)}
+              />
+              <Input
+                label="العمل"
+                value={fatherWork}
+                onChange={(e) => setFatherWork(e.target.value)}
+                placeholder="مثال: متقاعد / موظف"
+                disabled={fatherHealthStatus === 'متوفي'}
+              />
+              <Input
+                label="رقم الهاتف"
+                value={fatherPhone}
+                onChange={(e) => setFatherPhone(e.target.value)}
+                placeholder="01XXXXXXXXX"
+                disabled={fatherHealthStatus === 'متوفي'}
+              />
+            </div>
+
+            {/* Mother */}
+            <div className="glassmorphism p-4 rounded-xl flex flex-col gap-4">
+              <h5 className="text-sm font-bold text-gray-200 border-b border-white/5 pb-2 text-start">
+                بيانات الوالدة
+              </h5>
+              <Select
+                label="الحالة الصحية"
+                options={healthOptions}
+                value={motherHealthStatus}
+                onChange={(e) => setMotherHealthStatus(e.target.value)}
+              />
+              <Input
+                label="العمل"
+                value={motherWork}
+                onChange={(e) => setMotherWork(e.target.value)}
+                placeholder="مثال: ربة منزل"
+                disabled={motherHealthStatus === 'متوفي'}
+              />
+              <Input
+                label="رقم الهاتف"
+                value={motherPhone}
+                onChange={(e) => setMotherPhone(e.target.value)}
+                placeholder="01XXXXXXXXX"
+                disabled={motherHealthStatus === 'متوفي'}
+              />
+            </div>
+          </div>
+
+          <Input
+            label="العمل قبل التجنيد"
+            value={workBeforeEnlistment}
+            onChange={(e) => setWorkBeforeEnlistment(e.target.value)}
+            placeholder="مثال: مدرس / فني / طالب"
+            className="mt-4"
+          />
         </div>
 
         {/* Section 2: Military Info */}
@@ -317,12 +533,6 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
             القسم الثاني: البيانات الوظيفية والعسكرية
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Select
-              label="الفئة العسكرية"
-              options={categoryOptions}
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            />
             <Select
               label="الرتبة"
               options={rankOptions}
@@ -337,19 +547,13 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               placeholder="مثال: 202611099"
             />
             <Select
-              label="الوحدة العسكرية"
+              label="قسم - نقطه"
               options={unitOptions}
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
             />
             <Input
-              label="القسم / الفرع"
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              placeholder="مثال: فرع النظم"
-            />
-            <Input
-              label="التخصص العسكري"
+              label="التخصص"
               value={specialization}
               onChange={(e) => setSpecialization(e.target.value)}
               placeholder="مثال: كاتب إلكتروني"
@@ -389,6 +593,30 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               type="date"
               value={nextPromotionDate}
               onChange={(e) => setNextPromotionDate(e.target.value)}
+            />
+            <Input
+              label="الدفعة"
+              type="date"
+              value={batchDate}
+              onChange={(e) => setBatchDate(e.target.value)}
+            />
+            <Select
+              label="تقييم السلوك داخل الوحدة"
+              options={performanceOptions}
+              value={behaviorInUnit}
+              onChange={(e) => setBehaviorInUnit(e.target.value)}
+            />
+            <Select
+              label="تقييم السلوك من المرؤوسين"
+              options={performanceOptions}
+              value={subordinates}
+              onChange={(e) => setSubordinates(e.target.value)}
+            />
+            <Select
+              label="تقييم السلوك من الرئيس"
+              options={performanceOptions}
+              value={supervisor}
+              onChange={(e) => setSupervisor(e.target.value)}
             />
           </div>
         </div>

@@ -7,6 +7,8 @@ import { Modal } from '../ui/Modal'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
 import { PersonnelSelect } from '../ui/PersonnelSelect'
+import { Tabs } from '../ui/Tabs'
+import { RECORD_TABS, TAB_RANK_MAP } from '../../constants/categories'
 import {
   getOperationsRecords,
   createOperationRecord,
@@ -16,6 +18,7 @@ import type { OperationRecord } from '../../types/personnel'
 
 export const OperationsDashboard: React.FC = () => {
   const [records, setRecords] = useState<OperationRecord[]>([])
+  const [activeTab, setActiveTab] = useState<string>('all')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -147,28 +150,32 @@ export const OperationsDashboard: React.FC = () => {
     }
   ]
 
+  const visibleRecords = records.filter(
+    (r) => !!r.personnel && TAB_RANK_MAP[activeTab].includes(r.personnel.rank)
+  )
+
   const stats = [
     {
       label: 'إجمالي العمليات',
-      value: `${records.length} عملية`,
+      value: `${visibleRecords.length} عملية`,
       icon: UserCheck,
       color: 'text-blue-400'
     },
     {
       label: 'عمليات نشطة',
-      value: `${records.filter((r) => r.status === 'نشطة').length} عملية`,
+      value: `${visibleRecords.filter((r) => r.status === 'نشطة').length} عملية`,
       icon: Shield,
       color: 'text-red-400'
     },
     {
       label: 'مخططة',
-      value: `${records.filter((r) => r.status === 'مخططة').length} عملية`,
+      value: `${visibleRecords.filter((r) => r.status === 'مخططة').length} عملية`,
       icon: MapPin,
       color: 'text-amber-400'
     },
     {
       label: 'مكتملة',
-      value: `${records.filter((r) => r.status === 'مكتملة').length} عملية`,
+      value: `${visibleRecords.filter((r) => r.status === 'مكتملة').length} عملية`,
       icon: Crosshair,
       color: 'text-emerald-400'
     }
@@ -192,6 +199,9 @@ export const OperationsDashboard: React.FC = () => {
           إصدار أمر تحرك عسكري جديد
         </Button>
       </div>
+
+      {/* Category Tabs */}
+      <Tabs tabs={RECORD_TABS} activeTab={activeTab} onChange={setActiveTab} />
 
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm font-bold">
@@ -225,7 +235,7 @@ export const OperationsDashboard: React.FC = () => {
         <h3 className="text-lg font-bold text-white">
           تحركات القوات والمهام العسكرية الجارية والمخططة
         </h3>
-        <Table columns={columns} data={records} loading={loading} />
+        <Table columns={columns} data={visibleRecords} loading={loading} />
       </div>
 
       {/* Modal */}
@@ -248,6 +258,7 @@ export const OperationsDashboard: React.FC = () => {
           <PersonnelSelect
             value={formData.personnelId}
             onChange={(v) => setFormData((p) => ({ ...p, personnelId: v }))}
+            ranks={TAB_RANK_MAP[activeTab].join(',')}
           />
           <Input
             label="اسم العملية / المهمة"

@@ -2,12 +2,15 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
+// Canonical uploads root based on the server's working directory
+const uploadsRoot = path.join(process.cwd(), "uploads");
+
 // Ensure upload directories exist
 const uploadDirs = [
-    path.join(__dirname, "../../uploads"),
-    path.join(__dirname, "../../uploads/photos"),
-    path.join(__dirname, "../../uploads/documents"),
-    path.join(__dirname, "../../uploads/forms")
+    uploadsRoot,
+    path.join(uploadsRoot, "photos"),
+    path.join(uploadsRoot, "documents"),
+    path.join(uploadsRoot, "forms")
 ];
 
 uploadDirs.forEach(dir => {
@@ -29,7 +32,7 @@ const storage = multer.diskStorage({
             folder = "documents";
         }
 
-        cb(null, path.join(__dirname, `../../uploads/${folder}`));
+        cb(null, path.join(uploadsRoot, folder));
     },
     filename: (req, file, cb) => {
         // Safe filename: timestamp + sanitized original name
@@ -41,24 +44,29 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    const ext = path.extname(file.originalname || "").toLowerCase();
+    const allowedImageExt = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"];
+    const allowedDocExt = [".pdf", ".doc", ".docx"];
+
+    const isImageMime = file.mimetype.startsWith("image/");
+    const isAllowedImage = isImageMime || allowedImageExt.includes(ext);
+    const isAllowedDoc =
+        file.mimetype === "application/pdf" ||
+        file.mimetype === "application/msword" ||
+        file.mimetype ===
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        allowedDocExt.includes(ext);
+
     // For photos, only allow images
     if (file.fieldname === "photo") {
-        if (file.mimetype.startsWith("image/")) {
+        if (isAllowedImage) {
             cb(null, true);
         } else {
             cb(new Error("يسمح فقط برفع ملفات الصور للوجه الشخصي"));
         }
     } else {
         // For docs and forms, allow images, pdfs, etc.
-        const allowedTypes = [
-            "image/jpeg",
-            "image/png",
-            "image/jpg",
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        ];
-        if (allowedTypes.includes(file.mimetype)) {
+        if (isAllowedImage || isAllowedDoc) {
             cb(null, true);
         } else {
             cb(new Error("نوع الملف غير مدعوم. الأنواع المسموحة: PDF, DOC, DOCX, JPEG, PNG"));

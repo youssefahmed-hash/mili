@@ -29,12 +29,6 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
   onEditClick,
   onDeleteClick
 }) => {
-  const categoryLabels: Record<string, string> = {
-    soldier: 'جندي',
-    non_commissioned_officer: 'ضابط صف',
-    officer: 'ضابط'
-  }
-
   const statusBadgeVariants: Record<string, 'success' | 'warning' | 'danger' | 'secondary'> = {
     'على رأس العمل': 'success',
     إجازة: 'warning',
@@ -68,14 +62,9 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
         </div>
       )
     },
-    {
-      key: 'category',
-      label: 'الفئة',
-      render: (row) => <span>{categoryLabels[row.category] || row.category}</span>
-    },
     { key: 'rank', label: 'الرتبة' },
     { key: 'militaryId', label: 'الرقم العسكري' },
-    { key: 'unit', label: 'الوحدة' },
+    { key: 'unit', label: 'قسم - نقطه' },
     {
       key: 'status',
       label: 'الحالة',

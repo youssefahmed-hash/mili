@@ -11,37 +11,12 @@ interface PersonnelToolbarProps {
 export const PersonnelToolbar: React.FC<PersonnelToolbarProps> = ({ onAddClick }) => {
   const { filters, setFilters, clearFilters } = usePersonnelStore()
 
-  const categoryOptions = [
-    { value: '', label: 'كل الفئات' },
-    { value: 'soldier', label: 'جندي' },
-    { value: 'non_commissioned_officer', label: 'ضابط صف' },
-    { value: 'officer', label: 'ضابط' }
-  ]
-
   const statusOptions = [
     { value: '', label: 'كل الحالات' },
     { value: 'على رأس العمل', label: 'على رأس العمل' },
     { value: 'إجازة', label: 'إجازة' },
     { value: 'موقوف', label: 'موقوف' },
     { value: 'منتهية خدمته', label: 'منتهية خدمته' }
-  ]
-
-  const rankOptions = [
-    { value: '', label: 'كل الرتب' },
-    { value: 'جندي', label: 'جندي' },
-    { value: 'عريف', label: 'عريف' },
-    { value: 'رقيب', label: 'رقيب' },
-    { value: 'رقيب أول', label: 'رقيب أول' },
-    { value: 'مساعد', label: 'مساعد' },
-    { value: 'مساعد أول', label: 'مساعد أول' },
-    { value: 'ملازم', label: 'ملازم' },
-    { value: 'ملازم أول', label: 'ملازم أول' },
-    { value: 'نقيب', label: 'نقيب' },
-    { value: 'رائد', label: 'رائد' },
-    { value: 'مقدم', label: 'مقدم' },
-    { value: 'عقيد', label: 'عقيد' },
-    { value: 'عميد', label: 'عميد' },
-    { value: 'لواء', label: 'لواء' }
   ]
 
   const unitOptions = [
@@ -64,20 +39,6 @@ export const PersonnelToolbar: React.FC<PersonnelToolbarProps> = ({ onAddClick }
     <div className="glassmorphism p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between">
       {/* Filters Area */}
       <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-        <div className="w-[140px]">
-          <Select
-            options={categoryOptions}
-            value={filters.category || ''}
-            onChange={(e) => handleFilterChange('category', e.target.value)}
-          />
-        </div>
-        <div className="w-[140px]">
-          <Select
-            options={rankOptions}
-            value={filters.rank || ''}
-            onChange={(e) => handleFilterChange('rank', e.target.value)}
-          />
-        </div>
         <div className="w-[160px]">
           <Select
             options={unitOptions}

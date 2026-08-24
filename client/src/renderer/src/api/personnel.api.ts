@@ -8,10 +8,12 @@ export const getPersonnel = async (
   return response.data
 }
 
-export const getAllPersonnel = async (): Promise<ApiResponse<Personnel[]>> => {
-  const response = await API.get('/personnel', {
-    params: { page: 1, limit: 1000 }
-  })
+export const getAllPersonnel = async (ranks?: string): Promise<ApiResponse<Personnel[]>> => {
+  const params: Record<string, string | number> = { page: 1, limit: 1000 }
+  if (ranks) {
+    params.ranks = ranks
+  }
+  const response = await API.get('/personnel', { params })
   return response.data
 }
 

@@ -9,7 +9,7 @@ import {
 import type { Personnel, ApiResponse } from '../types/personnel'
 
 interface Filters {
-  category?: string
+  ranks?: string
   rank?: string
   unit?: string
   status?: string

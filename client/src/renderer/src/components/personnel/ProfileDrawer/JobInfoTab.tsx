@@ -29,9 +29,8 @@ export const JobInfoTab: React.FC<JobInfoTabProps> = ({ data }) => {
     { label: 'الفئة العسكرية', value: categoryLabels[data.category] || data.category },
     { label: 'الرتبة الحالية', value: data.rank },
     { label: 'الرقم العسكري', value: data.militaryId },
-    { label: 'الوحدة العسكرية', value: data.unit },
-    { label: 'القسم / الفرع', value: data.department || 'غير مسجل' },
-    { label: 'التخصص العسكري', value: data.specialization || 'غير مسجل' },
+    { label: 'قسم - نقطه', value: data.unit },
+    { label: 'التخصص', value: data.specialization || 'غير مسجل' },
     { label: 'تاريخ التعيين بالخدمة', value: formatDate(data.appointmentDate) },
     { label: 'تاريخ بدء الخدمة الفعلية', value: formatDate(data.serviceStartDate) },
     {
@@ -39,8 +38,12 @@ export const JobInfoTab: React.FC<JobInfoTabProps> = ({ data }) => {
       value: <Badge variant={statusBadgeVariants[data.status] || 'success'}>{data.status}</Badge>
     },
     { label: 'تقييم الأداء الأخير', value: data.performanceRating || 'غير مسجل' },
+    { label: 'تقييم السلوك داخل الوحدة', value: data.behaviorInUnit || 'غير مسجل' },
     { label: 'تاريخ آخر ترقية مستلمة', value: formatDate(data.lastPromotionDate) },
-    { label: 'تاريخ الترقية القادمة المستحقة', value: formatDate(data.nextPromotionDate) }
+    { label: 'تاريخ الترقية القادمة المستحقة', value: formatDate(data.nextPromotionDate) },
+    { label: 'الدفعة', value: formatDate(data.batchDate) },
+    { label: 'تقييم السلوك من المرؤوسين', value: data.subordinates || 'غير مسجل' },
+    { label: 'تقييم السلوك من الرئيس', value: data.supervisor || 'غير مسجل' }
   ]
 
   return (

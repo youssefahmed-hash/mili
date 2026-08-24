@@ -12,6 +12,14 @@ class PersonnelService {
     constructor() {
         this.repository = data_source_1.AppDataSource.getRepository(Personnel_1.Personnel);
     }
+    resolveCategory(data) {
+        if (data.category)
+            return data.category;
+        if (data.rank && PersonnelService.RANK_TO_CATEGORY[data.rank]) {
+            return PersonnelService.RANK_TO_CATEGORY[data.rank];
+        }
+        return 'soldier';
+    }
     async findAll(filters) {
         const page = filters.page || 1;
         const limit = filters.limit || 10;
@@ -22,8 +30,14 @@ class PersonnelService {
             queryBuilder.andWhere("(personnel.fullName ILIKE :search OR personnel.militaryId LIKE :searchExact)", { search: `%${filters.search}%`, searchExact: filters.search });
         }
         // Apply filters
-        if (filters.category) {
-            queryBuilder.andWhere("personnel.category = :category", { category: filters.category });
+        if (filters.ranks) {
+            const ranks = filters.ranks
+                .split(",")
+                .map((r) => r.trim())
+                .filter(Boolean);
+            if (ranks.length) {
+                queryBuilder.andWhere("personnel.rank IN (:...ranks)", { ranks });
+            }
         }
         if (filters.rank) {
             queryBuilder.andWhere("personnel.rank = :rank", { rank: filters.rank });
@@ -51,7 +65,8 @@ class PersonnelService {
         });
     }
     async create(data) {
-        const newPersonnel = this.repository.create(data);
+        const payload = { ...data, category: this.resolveCategory(data) };
+        const newPersonnel = this.repository.create(payload);
         return await this.repository.save(newPersonnel);
     }
     async update(id, data) {
@@ -59,11 +74,12 @@ class PersonnelService {
         if (!personnel) {
             throw new Error("الفرد العسكري غير موجود");
         }
+        const payload = { ...data, category: this.resolveCategory(data) };
         // If updating photo and old photo exists, optionally remove old photo file
         if (data.photo && personnel.photo && data.photo !== personnel.photo) {
             this.deleteLocalFile(personnel.photo);
         }
-        this.repository.merge(personnel, data);
+        this.repository.merge(personnel, payload);
         return await this.repository.save(personnel);
     }
     async delete(id) {
@@ -97,7 +113,7 @@ class PersonnelService {
             // fileUrl format: /uploads/folder/filename
             if (fileUrl.startsWith("/uploads/")) {
                 const relativePath = fileUrl.replace("/uploads/", "");
-                const filePath = path_1.default.join(__dirname, "../../../uploads", relativePath);
+                const filePath = path_1.default.join(process.cwd(), "uploads", relativePath);
                 if (fs_1.default.existsSync(filePath)) {
                     fs_1.default.unlinkSync(filePath);
                 }
@@ -109,4 +125,20 @@ class PersonnelService {
     }
 }
 exports.PersonnelService = PersonnelService;
+PersonnelService.RANK_TO_CATEGORY = {
+    'جندي': 'soldier',
+    'عريف': 'non_commissioned_officer',
+    'رقيب': 'non_commissioned_officer',
+    'رقيب أول': 'non_commissioned_officer',
+    'مساعد': 'non_commissioned_officer',
+    'مساعد أول': 'non_commissioned_officer',
+    'ملازم': 'officer',
+    'ملازم أول': 'officer',
+    'نقيب': 'officer',
+    'رائد': 'officer',
+    'مقدم': 'officer',
+    'عقيد': 'officer',
+    'عميد': 'officer',
+    'لواء': 'officer'
+};
 exports.personnelService = new PersonnelService();

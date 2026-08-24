@@ -31,7 +31,7 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: "enum",
-        enum: ['nationalIdCard', 'militaryIdCard', 'appointmentDocuments', 'promotionDocuments', 'certificates']
+        enum: ['nationalIdCard', 'militaryIdCard', 'appointmentDocuments', 'promotionDocuments', 'certificates', 'personnelCard', 'personnelCarnet', 'personnelForm']
     }),
     __metadata("design:type", String)
 ], Document.prototype, "type", void 0);

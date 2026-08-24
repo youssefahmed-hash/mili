@@ -7,12 +7,14 @@ exports.upload = void 0;
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
+// Canonical uploads root based on the server's working directory
+const uploadsRoot = path_1.default.join(process.cwd(), "uploads");
 // Ensure upload directories exist
 const uploadDirs = [
-    path_1.default.join(__dirname, "../../uploads"),
-    path_1.default.join(__dirname, "../../uploads/photos"),
-    path_1.default.join(__dirname, "../../uploads/documents"),
-    path_1.default.join(__dirname, "../../uploads/forms")
+    uploadsRoot,
+    path_1.default.join(uploadsRoot, "photos"),
+    path_1.default.join(uploadsRoot, "documents"),
+    path_1.default.join(uploadsRoot, "forms")
 ];
 uploadDirs.forEach(dir => {
     if (!fs_1.default.existsSync(dir)) {
@@ -32,7 +34,7 @@ const storage = multer_1.default.diskStorage({
         else if (req.originalUrl.includes("/documents")) {
             folder = "documents";
         }
-        cb(null, path_1.default.join(__dirname, `../../uploads/${folder}`));
+        cb(null, path_1.default.join(uploadsRoot, folder));
     },
     filename: (req, file, cb) => {
         // Safe filename: timestamp + sanitized original name
@@ -43,9 +45,19 @@ const storage = multer_1.default.diskStorage({
     }
 });
 const fileFilter = (req, file, cb) => {
+    const ext = path_1.default.extname(file.originalname || "").toLowerCase();
+    const allowedImageExt = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"];
+    const allowedDocExt = [".pdf", ".doc", ".docx"];
+    const isImageMime = file.mimetype.startsWith("image/");
+    const isAllowedImage = isImageMime || allowedImageExt.includes(ext);
+    const isAllowedDoc = file.mimetype === "application/pdf" ||
+        file.mimetype === "application/msword" ||
+        file.mimetype ===
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        allowedDocExt.includes(ext);
     // For photos, only allow images
     if (file.fieldname === "photo") {
-        if (file.mimetype.startsWith("image/")) {
+        if (isAllowedImage) {
             cb(null, true);
         }
         else {
@@ -54,15 +66,7 @@ const fileFilter = (req, file, cb) => {
     }
     else {
         // For docs and forms, allow images, pdfs, etc.
-        const allowedTypes = [
-            "image/jpeg",
-            "image/png",
-            "image/jpg",
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        ];
-        if (allowedTypes.includes(file.mimetype)) {
+        if (isAllowedImage || isAllowedDoc) {
             cb(null, true);
         }
         else {

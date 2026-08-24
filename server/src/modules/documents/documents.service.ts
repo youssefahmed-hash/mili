@@ -35,7 +35,7 @@ export class DocumentsService {
         try {
             if (fileUrl.startsWith("/uploads/")) {
                 const relativePath = fileUrl.replace("/uploads/", "");
-                const filePath = path.join(__dirname, "../../../uploads", relativePath);
+                const filePath = path.join(process.cwd(), "uploads", relativePath);
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
                 }

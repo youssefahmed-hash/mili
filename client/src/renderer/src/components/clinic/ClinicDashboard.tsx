@@ -7,11 +7,14 @@ import { Modal } from '../ui/Modal'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
 import { PersonnelSelect } from '../ui/PersonnelSelect'
+import { Tabs } from '../ui/Tabs'
+import { RECORD_TABS, TAB_RANK_MAP } from '../../constants/categories'
 import { getClinicRecords, createClinicRecord, deleteClinicRecord } from '../../api/clinic.api'
 import type { ClinicRecord } from '../../types/personnel'
 
 export const ClinicDashboard: React.FC = () => {
   const [records, setRecords] = useState<ClinicRecord[]>([])
+  const [activeTab, setActiveTab] = useState<string>('all')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -105,6 +108,10 @@ export const ClinicDashboard: React.FC = () => {
     { value: 'غير لائق نهائياً', label: 'غير لائق نهائياً' }
   ]
 
+  const visibleRecords = records.filter(
+    (r) => !!r.personnel && TAB_RANK_MAP[activeTab].includes(r.personnel.rank)
+  )
+
   const columns: Column<ClinicRecord>[] = [
     {
       key: 'personnel',
@@ -154,25 +161,25 @@ export const ClinicDashboard: React.FC = () => {
   const medicalStats = [
     {
       label: 'كشوفات اليوم',
-      value: `${records.length} حالة`,
+      value: `${visibleRecords.length} حالة`,
       icon: Stethoscope,
       color: 'text-blue-400'
     },
     {
       label: 'محجوز بالعيادة',
-      value: `${records.filter((v) => v.medicalStatus.includes('راحة')).length} أفراد`,
+      value: `${visibleRecords.filter((v) => v.medicalStatus.includes('راحة')).length} أفراد`,
       icon: Heart,
       color: 'text-red-400'
     },
     {
       label: 'غير لائق طبيّاً',
-      value: `${records.filter((v) => v.medicalStatus.includes('غير لائق')).length} فرد`,
+      value: `${visibleRecords.filter((v) => v.medicalStatus.includes('غير لائق')).length} فرد`,
       icon: ShieldAlert,
       color: 'text-amber-400'
     },
     {
       label: 'لائق للخدمة',
-      value: `${records.filter((v) => v.medicalStatus === 'لائق').length} أفراد`,
+      value: `${visibleRecords.filter((v) => v.medicalStatus === 'لائق').length} أفراد`,
       icon: CheckCircle,
       color: 'text-emerald-400'
     }
@@ -196,6 +203,9 @@ export const ClinicDashboard: React.FC = () => {
           تسجيل كشف طبي جديد
         </Button>
       </div>
+
+      {/* Category Tabs */}
+      <Tabs tabs={RECORD_TABS} activeTab={activeTab} onChange={setActiveTab} />
 
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm font-bold">
@@ -227,7 +237,7 @@ export const ClinicDashboard: React.FC = () => {
       {/* Table Area */}
       <div className="flex flex-col gap-4">
         <h3 className="text-lg font-bold text-white">جدول المراجعات والكشوفات الطبية اليومية</h3>
-        <Table columns={columns} data={records} loading={loading} />
+        <Table columns={columns} data={visibleRecords} loading={loading} />
       </div>
 
       {/* Modal */}
@@ -250,6 +260,7 @@ export const ClinicDashboard: React.FC = () => {
           <PersonnelSelect
             value={formData.personnelId}
             onChange={(v) => setFormData((p) => ({ ...p, personnelId: v }))}
+            ranks={TAB_RANK_MAP[activeTab].join(',')}
           />
           <Select
             label="نوع الكشف الطبي"

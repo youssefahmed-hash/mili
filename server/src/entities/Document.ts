@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from "typeorm";
 import { Personnel } from "./Personnel";
 
-export type DocumentType = 'nationalIdCard' | 'militaryIdCard' | 'appointmentDocuments' | 'promotionDocuments' | 'certificates';
+export type DocumentType = 'nationalIdCard' | 'militaryIdCard' | 'appointmentDocuments' | 'promotionDocuments' | 'certificates' | 'personnelCard' | 'personnelCarnet' | 'personnelForm';
 
 @Entity("documents")
 export class Document {
@@ -17,7 +17,7 @@ export class Document {
 
     @Column({
         type: "enum",
-        enum: ['nationalIdCard', 'militaryIdCard', 'appointmentDocuments', 'promotionDocuments', 'certificates']
+        enum: ['nationalIdCard', 'militaryIdCard', 'appointmentDocuments', 'promotionDocuments', 'certificates', 'personnelCard', 'personnelCarnet', 'personnelForm']
     })
     type!: DocumentType;
 

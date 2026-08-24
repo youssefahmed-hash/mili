@@ -7,6 +7,7 @@ import { Button } from '../../ui/Button'
 import { Badge } from '../../ui/Badge'
 import { CheckSquare, Eye, Trash2 } from 'lucide-react'
 import type { Personnel, Form as FormType } from '../../../types/personnel'
+import { resolveFileUrl } from '../../../utils/fileUrl'
 
 interface FormsTabProps {
   data: Personnel
@@ -126,7 +127,7 @@ export const FormsTab: React.FC<FormsTabProps> = ({ data }) => {
         <div className="flex items-center justify-center gap-2">
           {row.fileUrl && (
             <a
-              href={`http://localhost:5000${row.fileUrl}`}
+              href={resolveFileUrl(row.fileUrl) || '#'}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center justify-center p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all"
