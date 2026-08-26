@@ -13,6 +13,7 @@ const SecurityRecord_1 = require("../entities/SecurityRecord");
 const Service_1 = require("../entities/Service");
 const Reward_1 = require("../entities/Reward");
 const Penalty_1 = require("../entities/Penalty");
+const User_1 = require("../entities/User");
 exports.AppDataSource = new typeorm_1.DataSource({
     type: "postgres",
     host: process.env.DB_HOST || "localhost",
@@ -22,7 +23,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     database: process.env.DB_NAME || "military_personnel_db",
     synchronize: true, // Auto-create tables in development
     logging: false,
-    entities: [Personnel_1.Personnel, Document_1.Document, Vacation_1.Vacation, Form_1.Form, ClinicRecord_1.ClinicRecord, OperationRecord_1.OperationRecord, SecurityRecord_1.SecurityRecord, Service_1.Service, Reward_1.Reward, Penalty_1.Penalty],
+    entities: [Personnel_1.Personnel, Document_1.Document, Vacation_1.Vacation, Form_1.Form, ClinicRecord_1.ClinicRecord, OperationRecord_1.OperationRecord, SecurityRecord_1.SecurityRecord, Service_1.Service, Reward_1.Reward, Penalty_1.Penalty, User_1.User],
     migrations: [],
     subscribers: [],
 });

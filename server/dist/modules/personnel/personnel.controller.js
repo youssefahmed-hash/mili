@@ -100,6 +100,16 @@ class PersonnelController {
             next(err);
         }
     }
+    async getVacationLineup(req, res, next) {
+        try {
+            const { date } = req.query;
+            const result = await personnel_service_1.personnelService.getVacationLineup(date);
+            return (0, apiResponse_1.successResponse)(res, result, "تم جلب طابور الإجازات بنجاح");
+        }
+        catch (err) {
+            next(err);
+        }
+    }
 }
 exports.PersonnelController = PersonnelController;
 exports.personnelController = new PersonnelController();

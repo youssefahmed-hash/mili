@@ -11,6 +11,7 @@ interface AuthState {
   error: string | null
   login: (username: string, password: string) => Promise<boolean>
   register: (data: RegisterPayload) => Promise<boolean>
+  updateUser: (data: Partial<User>) => void
   logout: () => void
 }
 
@@ -64,5 +65,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
     set({ token: null, user: null, error: null })
+  },
+
+  updateUser: (data) => {
+    const current = useAuthStore.getState().user
+    if (!current) return
+    const merged = { ...current, ...data }
+    localStorage.setItem(USER_KEY, JSON.stringify(merged))
+    set({ user: merged })
   }
 }))

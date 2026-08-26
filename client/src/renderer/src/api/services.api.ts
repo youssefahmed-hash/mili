@@ -1,8 +1,15 @@
 import API from './axios'
-import type { ApiResponse, ServiceRecord } from '../types/personnel'
+import type { ApiResponse, ServiceRecord, ServicesLineup } from '../types/personnel'
 
 export const getServiceRecords = async (): Promise<ApiResponse<ServiceRecord[]>> => {
   const response = await API.get('/services')
+  return response.data
+}
+
+export const getServicesLineup = async (
+  date: string
+): Promise<ApiResponse<ServicesLineup>> => {
+  const response = await API.get(`/services/lineup?date=${date}`)
   return response.data
 }
 

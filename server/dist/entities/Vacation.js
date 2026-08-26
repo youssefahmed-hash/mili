@@ -33,6 +33,10 @@ __decorate([
     __metadata("design:type", String)
 ], Vacation.prototype, "vacationType", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 10, nullable: true }),
+    __metadata("design:type", Object)
+], Vacation.prototype, "cycle", void 0);
+__decorate([
     (0, typeorm_1.Column)({ type: "date" }),
     __metadata("design:type", Date)
 ], Vacation.prototype, "startDate", void 0);

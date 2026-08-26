@@ -42,3 +42,19 @@ export const deleteUser = async (id: string): Promise<ApiResponse<void>> => {
   const response = await API.delete(`/auth/users/${id}`)
   return response.data
 }
+
+export const updateProfile = async (data: {
+  fullName?: string
+  department?: string
+}): Promise<ApiResponse<User>> => {
+  const response = await API.put('/auth/me', data)
+  return response.data
+}
+
+export const changePassword = async (data: {
+  currentPassword: string
+  newPassword: string
+}): Promise<ApiResponse<User>> => {
+  const response = await API.post('/auth/change-password', data)
+  return response.data
+}

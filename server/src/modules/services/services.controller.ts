@@ -52,6 +52,16 @@ export class ServicesController {
       next(err);
     }
   }
+
+  async getLineup(req: Request, res: Response, next: NextFunction) {
+    try {
+      const date = (req.query.date as string) || new Date().toISOString().slice(0, 10);
+      const lineup = await servicesService.getServicesLineup(date);
+      return successResponse(res, lineup, "تم جلب طابور الخدمات بنجاح");
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const servicesController = new ServicesController();

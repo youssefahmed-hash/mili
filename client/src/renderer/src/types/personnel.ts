@@ -171,6 +171,27 @@ export interface VacationLineup {
   onVacation: VacationLineupPerson[]
 }
 
+export interface ServicesLineupItem {
+  id: string
+  personnelId: string
+  fullName: string
+  rank: string
+  militaryId: string
+  unit: string
+  personnelType: string
+  startTime: string
+  endTime: string
+  location: string
+  department: string
+  notes?: string | null
+}
+
+export interface ServicesLineup {
+  date: string
+  internal: ServicesLineupItem[]
+  military: ServicesLineupItem[]
+}
+
 export interface ServiceRecord {
   id: string
   personnelId: string

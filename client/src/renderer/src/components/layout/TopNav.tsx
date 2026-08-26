@@ -1,5 +1,5 @@
 import React from 'react'
-import { Users, CalendarClock, HeartPulse, Crosshair, ShieldCheck, UserCog } from 'lucide-react'
+import { Users, CalendarClock, HeartPulse, Crosshair, ShieldCheck, UserCog, ClipboardList } from 'lucide-react'
 import { useAppStore, TabType } from '../../store/appStore'
 import { useAuthStore } from '../../store/authStore'
 
@@ -14,6 +14,7 @@ export const TopNav: React.FC = () => {
       icon: Users
     },
     { id: 'طابور الاجازات' as TabType, label: 'طابور الاجازات', icon: CalendarClock },
+    { id: 'طابور الخدمات' as TabType, label: 'طابور الخدمات', icon: ClipboardList },
     { id: 'العيادة' as TabType, label: 'العيادة', icon: HeartPulse },
     { id: 'العمليات' as TabType, label: 'العمليات', icon: Crosshair },
     { id: 'الأمن' as TabType, label: 'الأمن', icon: ShieldCheck }

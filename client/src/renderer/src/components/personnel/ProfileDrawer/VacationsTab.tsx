@@ -10,7 +10,7 @@ import { Select } from '../../ui/Select'
 import { Input } from '../../ui/Input'
 import { Button } from '../../ui/Button'
 import { Badge } from '../../ui/Badge'
-import { Plus, CheckCircle, XCircle, Trash2 } from 'lucide-react'
+import { Plus, CheckCircle, XCircle, Trash2, Pencil } from 'lucide-react'
 import type { Personnel, Vacation } from '../../../types/personnel'
 
 interface VacationsTabProps {
@@ -26,6 +26,23 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
   const [startDate, setStartDate] = useState('')
   const [expectedReturnDate, setExpectedReturnDate] = useState('')
   const [notes, setNotes] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+
+  const addDays = (dateStr: string, days: number): string => {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+    d.setDate(d.getDate() + days)
+    return d.toISOString().slice(0, 10)
+  }
+
+  // Inclusive leave duration (نزول and طلوع days both count as vacation)
+  const leaveDurationDays = (startStr: string, retStr: string): number => {
+    if (!startStr || !retStr) return 0
+    const diff = Math.round(
+      (new Date(retStr).getTime() - new Date(startStr).getTime()) / 86400000
+    )
+    return Math.max(1, diff + 1)
+  }
   const [error, setError] = useState<string | null>(null)
 
   const fetchVacations = useCallback(async () => {
@@ -48,37 +65,62 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
     fetchVacations()
   }, [fetchVacations])
 
-  const handleCreate = async (e: React.FormEvent): Promise<void> => {
+  const resetForm = (): void => {
+    setEditingId(null)
+    setVacationType('إجازة سنوية')
+    setCycle('28')
+    setStartDate('')
+    setExpectedReturnDate('')
+    setNotes('')
+  }
+
+  const handleEdit = (row: Vacation): void => {
+    setEditingId(row.id)
+    setVacationType(row.vacationType)
+    setCycle(row.cycle || '28')
+    setStartDate(row.startDate ? row.startDate.split('T')[0] : '')
+    setExpectedReturnDate(row.expectedReturnDate ? row.expectedReturnDate.split('T')[0] : '')
+    setNotes(row.notes || '')
+  }
+
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
-    if (!startDate || !expectedReturnDate) {
-      setError('الرجاء تحديد تاريخ بدء وعودة الإجازة')
+    if (!startDate) {
+      setError('الرجاء تحديد تاريخ بدء الإجازة')
       return
     }
+    const returnDate = expectedReturnDate || addDays(startDate, 13)
 
     setSubmitting(true)
     setError(null)
 
     try {
-      const res = await createVacation({
-        personnelId: data.id,
-        vacationType,
-        cycle,
-        startDate,
-        expectedReturnDate,
-        notes,
-        status: 'معلقة'
-      })
+      const res = editingId
+        ? await updateVacation(editingId, {
+            vacationType,
+            cycle,
+            startDate,
+            expectedReturnDate: returnDate,
+            notes
+          })
+        : await createVacation({
+            personnelId: data.id,
+            vacationType,
+            cycle,
+            startDate,
+            expectedReturnDate: returnDate,
+            notes,
+            status: 'معلقة'
+          })
       if (res.success) {
-        setStartDate('')
-        setExpectedReturnDate('')
-        setNotes('')
+        resetForm()
         fetchVacations()
       } else {
-        setError(res.message || 'فشل تسجيل الإجازة')
+        setError(res.message || (editingId ? 'فشل تحديث الإجازة' : 'فشل تسجيل الإجازة'))
       }
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
-      setError(error.response?.data?.message || 'حدث خطأ أثناء تسجيل الإجازة')
+      setError(error.response?.data?.message || 'حدث خطأ أثناء حفظ الإجازة')
     } finally {
       setSubmitting(false)
     }
@@ -140,6 +182,14 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
       render: (row) => <span>{new Date(row.expectedReturnDate).toLocaleDateString('ar-EG')}</span>
     },
     {
+      key: 'duration',
+      label: 'مدة الإجازة (يوم)',
+      render: (row) => {
+        const d = leaveDurationDays(row.startDate, row.expectedReturnDate)
+        return <span>{d} يوم</span>
+      }
+    },
+    {
       key: 'status',
       label: 'التمام',
       render: (row) => (
@@ -178,6 +228,15 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
           <Button
             variant="ghost"
             size="sm"
+            className="p-1 text-blue-400 hover:bg-blue-500/10 rounded"
+            onClick={() => handleEdit(row)}
+            title="تعديل السجل"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded"
             onClick={() => handleDelete(row.id)}
             title="حذف السجل"
@@ -192,7 +251,7 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
   return (
     <div className="flex flex-col gap-6 text-start">
       <form
-        onSubmit={handleCreate}
+        onSubmit={handleSubmit}
         className="glassmorphism p-4 rounded-xl grid grid-cols-1 md:grid-cols-5 gap-4 items-end"
       >
         <div className="md:col-span-1">
@@ -204,14 +263,13 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
           />
         </div>
         <div className="md:col-span-1">
-          <Select
-            label="دورة النزول (يوم)"
-            options={[
-              { value: '14', label: 'كل 14 يوم' },
-              { value: '28', label: 'كل 28 يوم' }
-            ]}
+          <Input
+            label="مدة التواجد بالقطاع قبل النزول (يوم)"
+            type="number"
+            min={1}
             value={cycle}
             onChange={(e) => setCycle(e.target.value)}
+            placeholder="28"
           />
         </div>
         <div>
@@ -219,12 +277,15 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
             label="تاريخ بدء الإجازة"
             type="date"
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            onChange={(e) => {
+              setStartDate(e.target.value)
+              if (!editingId) setExpectedReturnDate(addDays(e.target.value, 13))
+            }}
           />
         </div>
         <div>
           <Input
-            label="تاريخ العودة المتوقع"
+            label="تاريخ العودة (تلقائي 14 يوم إجازة)"
             type="date"
             value={expectedReturnDate}
             onChange={(e) => setExpectedReturnDate(e.target.value)}
@@ -238,14 +299,21 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
             placeholder="اكتب تفاصيل إضافية..."
           />
         </div>
-        <Button
-          type="submit"
-          variant="primary"
-          loading={submitting}
-          startIcon={<Plus className="h-4 w-4" />}
-        >
-          تسجيل إجازة
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="submit"
+            variant="primary"
+            loading={submitting}
+            startIcon={editingId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+          >
+            {editingId ? 'تحديث الإجازة' : 'تسجيل إجازة'}
+          </Button>
+          {editingId && (
+            <Button type="button" variant="secondary" onClick={resetForm}>
+              إلغاء
+            </Button>
+          )}
+        </div>
       </form>
 
       {error && (

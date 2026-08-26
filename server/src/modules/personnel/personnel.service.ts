@@ -5,6 +5,22 @@ import { Like, Equal } from "typeorm";
 import fs from "fs";
 import path from "path";
 
+// Timezone-safe YYYY-MM-DD parsing/formatting (local midnight, no UTC shift)
+const parseYmd = (s?: string | Date): Date => {
+    if (!s) return new Date();
+    if (s instanceof Date) {
+        return new Date(s.getFullYear(), s.getMonth(), s.getDate());
+    }
+    const [y, m, d] = s.slice(0, 10).split('-').map(Number);
+    return new Date(y, m - 1, d);
+};
+const fmtYmd = (dt: Date): string => {
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, '0');
+    const d = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
 export class PersonnelService {
     private repository = AppDataSource.getRepository(Personnel);
 
@@ -166,7 +182,7 @@ export class PersonnelService {
     }
 
     async getVacationLineup(dateStr?: string) {
-        const today = dateStr ? new Date(dateStr) : new Date();
+        const today = parseYmd(dateStr);
         today.setHours(0, 0, 0, 0);
 
         const personnelList = await this.repository.find();
@@ -177,9 +193,9 @@ export class PersonnelService {
         const baseByPersonnel: Record<string, (typeof vacations)[number]> = {};
         for (const v of vacations) {
             const cycle = parseInt(v.cycle || '', 10);
-            if (![14, 28].includes(cycle)) continue;
+            if (!cycle || cycle <= 0) continue;
             const existing = baseByPersonnel[v.personnelId];
-            if (!existing || new Date(v.startDate) < new Date(existing.startDate)) {
+            if (!existing || parseYmd(v.startDate).getTime() < parseYmd(existing.startDate).getTime()) {
                 baseByPersonnel[v.personnelId] = v;
             }
         }
@@ -193,21 +209,25 @@ export class PersonnelService {
             if (!base) continue;
 
             const cycle = parseInt(base.cycle as string, 10);
-            const anchor = new Date(base.startDate);
+            const anchor = parseYmd(base.startDate);
             anchor.setHours(0, 0, 0, 0);
-            if (anchor > today) continue;
+            if (anchor.getTime() > today.getTime()) continue;
 
             const leaveDays = Math.max(
                 1,
                 Math.round(
-                    (new Date(base.expectedReturnDate).getTime() - anchor.getTime()) / 86400000
+                    (parseYmd(base.expectedReturnDate).getTime() - anchor.getTime()) / 86400000
                 )
             );
 
+            // Rotation period = service (cycle) + leave (leaveDays). After returning,
+            // the next descent happens cycle days later, so the full period is cycle + leaveDays.
+            const period = cycle + leaveDays;
+
             const diffDays = Math.floor((today.getTime() - anchor.getTime()) / 86400000);
-            const k = Math.floor(diffDays / cycle);
+            const k = Math.floor(diffDays / period);
             const descent = new Date(anchor);
-            descent.setDate(descent.getDate() + k * cycle);
+            descent.setDate(descent.getDate() + k * period);
             const ret = new Date(descent);
             ret.setDate(ret.getDate() + leaveDays);
 
@@ -218,8 +238,8 @@ export class PersonnelService {
                 militaryId: p.militaryId,
                 unit: p.unit,
                 cycle: base.cycle,
-                nextDescent: descent.toISOString().slice(0, 10),
-                nextReturn: ret.toISOString().slice(0, 10)
+                nextDescent: fmtYmd(descent),
+                nextReturn: fmtYmd(ret)
             };
 
             if (today.getTime() === descent.getTime()) {
@@ -234,7 +254,7 @@ export class PersonnelService {
         }
 
         return {
-            date: today.toISOString().slice(0, 10),
+            date: fmtYmd(today),
             goingDown,
             comingUp,
             onVacation

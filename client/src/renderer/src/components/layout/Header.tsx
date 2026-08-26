@@ -1,10 +1,12 @@
 import React from 'react'
-import { Shield, User, LogOut } from 'lucide-react'
+import { Shield, User, LogOut, Settings as SettingsIcon } from 'lucide-react'
 import { GlobalSearch } from './GlobalSearch'
 import { useAuthStore } from '../../store/authStore'
+import { useAppStore } from '../../store/appStore'
 
 export const Header: React.FC = () => {
   const { user, logout } = useAuthStore()
+  const setActiveTab = useAppStore((s) => s.setActiveTab)
 
   return (
     <header className="h-16 border-b border-white/5 bg-military-800/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-40">
@@ -41,6 +43,13 @@ export const Header: React.FC = () => {
         <div className="h-8 w-8 rounded-full bg-military-primary flex items-center justify-center border border-white/10 shadow-lg">
           <User className="h-4 w-4 text-white" />
         </div>
+        <button
+          onClick={() => setActiveTab('الإعدادات')}
+          title="الإعدادات"
+          className="h-8 w-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-military-primary/20 transition-colors"
+        >
+          <SettingsIcon className="h-4 w-4" />
+        </button>
         <button
           onClick={logout}
           title="تسجيل الخروج"

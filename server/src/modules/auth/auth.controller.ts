@@ -59,6 +59,29 @@ export class AuthController {
     }
   }
 
+  async updateProfile(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const user = await authService.updateProfile(req.user!.id, req.body)
+      return successResponse(res, user, 'تم تحديث الملف الشخصي')
+    } catch (err) {
+      next(err)
+    }
+  }
+
+  async changePassword(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { currentPassword, newPassword } = req.body
+      const user = await authService.changePassword(
+        req.user!.id,
+        currentPassword,
+        newPassword
+      )
+      return successResponse(res, user, 'تم تغيير كلمة المرور بنجاح')
+    } catch (err) {
+      next(err)
+    }
+  }
+
   async remove(req: Request, res: Response, next: NextFunction) {
     try {
       await authService.delete(req.params.id)

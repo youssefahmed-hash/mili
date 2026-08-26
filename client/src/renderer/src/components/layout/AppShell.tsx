@@ -8,6 +8,8 @@ import { OperationsDashboard } from '../operations/OperationsDashboard'
 import { SecurityDashboard } from '../security/SecurityDashboard'
 import { UsersDashboard } from '../users/UsersDashboard'
 import { VacationLineup } from '../personnel/VacationLineup'
+import { ServicesLineup } from '../personnel/ServicesLineup'
+import { Settings } from '../Settings'
 
 export const AppShell: React.FC = () => {
   const { activeTab } = useAppStore()
@@ -18,6 +20,10 @@ export const AppShell: React.FC = () => {
         return <PersonnelModule />
       case 'طابور الاجازات':
         return <VacationLineup />
+      case 'طابور الخدمات':
+        return <ServicesLineup />
+      case 'الإعدادات':
+        return <Settings />
       case 'العيادة':
         return <ClinicDashboard />
       case 'العمليات':

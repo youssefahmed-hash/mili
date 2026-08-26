@@ -95,6 +95,42 @@ export class AuthService {
     return sanitize(saved)
   }
 
+  async updateProfile(id: string, input: { fullName?: string; department?: string }) {
+    const user = await this.repo.findOne({ where: { id } })
+    if (!user) {
+      const e: any = new Error('المستخدم غير موجود')
+      e.status = 404
+      throw e
+    }
+    if (input.fullName !== undefined) user.fullName = input.fullName
+    if (input.department !== undefined) user.department = input.department
+    const saved = await this.repo.save(user)
+    return sanitize(saved)
+  }
+
+  async changePassword(id: string, currentPassword: string, newPassword: string) {
+    const user = await this.repo.findOne({ where: { id } })
+    if (!user) {
+      const e: any = new Error('المستخدم غير موجود')
+      e.status = 404
+      throw e
+    }
+    const ok = await bcrypt.compare(currentPassword, user.password)
+    if (!ok) {
+      const e: any = new Error('كلمة المرور الحالية غير صحيحة')
+      e.status = 400
+      throw e
+    }
+    if (!newPassword || newPassword.length < 4) {
+      const e: any = new Error('كلمة المرور الجديدة قصيرة جداً (4 أحرف على الأقل)')
+      e.status = 400
+      throw e
+    }
+    user.password = await bcrypt.hash(newPassword, SALT_ROUNDS)
+    const saved = await this.repo.save(user)
+    return sanitize(saved)
+  }
+
   async delete(id: string) {
     const user = await this.repo.findOne({ where: { id } })
     if (!user) {

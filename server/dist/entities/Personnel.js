@@ -107,6 +107,14 @@ __decorate([
     __metadata("design:type", String)
 ], Personnel.prototype, "unit", void 0);
 __decorate([
+    (0, typeorm_1.Column)({
+        type: "enum",
+        enum: ['حربية', 'داخلية'],
+        default: 'حربية'
+    }),
+    __metadata("design:type", String)
+], Personnel.prototype, "personnelType", void 0);
+__decorate([
     (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
     __metadata("design:type", Object)
 ], Personnel.prototype, "specialization", void 0);
@@ -119,13 +127,101 @@ __decorate([
     __metadata("design:type", Object)
 ], Personnel.prototype, "serviceStartDate", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: "enum",
-        enum: ['على رأس العمل', 'إجازة', 'موقوف', 'منتهية خدمته'],
-        default: 'على رأس العمل'
-    }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 100, default: 'داخل القطاع' }),
     __metadata("design:type", String)
 ], Personnel.prototype, "status", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "enlistmentDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "dischargeDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "joiningDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "weapon", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "lastLeaveReturnDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "int", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "guardCount", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 100, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "seniorityNumber", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 100, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "grade", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "promotionCurrentRankDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "promotionCurrentGradeDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "promotionHigherRankDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "promotionHigherGradeDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 100, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "policeNumber", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "date", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "reserveDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "int", nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "administrativeUnits", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 500, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "militaryTrials", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "affiliatedUnit", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "display", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "strikeOff", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "injured", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "clinics", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "medicalCommissionLeaves", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 50, nullable: true }),
+    __metadata("design:type", Object)
+], Personnel.prototype, "weaponBan", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
     __metadata("design:type", Object)

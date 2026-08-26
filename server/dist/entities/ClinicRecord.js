@@ -49,6 +49,26 @@ __decorate([
     __metadata("design:type", Object)
 ], ClinicRecord.prototype, "examinationDate", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 50, default: "حربية" }),
+    __metadata("design:type", String)
+], ClinicRecord.prototype, "clinicType", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 100, nullable: true }),
+    __metadata("design:type", Object)
+], ClinicRecord.prototype, "carnetNumber", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 100, nullable: true }),
+    __metadata("design:type", Object)
+], ClinicRecord.prototype, "specialty", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "text", nullable: true }),
+    __metadata("design:type", Object)
+], ClinicRecord.prototype, "diagnosis", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "text", nullable: true }),
+    __metadata("design:type", Object)
+], ClinicRecord.prototype, "treatment", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], ClinicRecord.prototype, "createdAt", void 0);

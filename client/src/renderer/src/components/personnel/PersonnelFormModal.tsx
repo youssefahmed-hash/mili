@@ -7,7 +7,7 @@ import { Button } from '../ui/Button'
 import { Upload } from 'lucide-react'
 import type { Personnel } from '../../types/personnel'
 import { resolveFileUrl, isPdf } from '../../utils/fileUrl'
-import { TAB_RANK_MAP, getRankCategory } from '../../constants/categories'
+import { getRankCategory } from '../../constants/categories'
 import { getDepartmentOptions } from '../../constants/departments'
 import {
   PERSONNEL_TYPE_OPTIONS,
@@ -247,10 +247,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
 
     setLoading(true)
 
-    const derivedCategory =
-      (Object.keys(TAB_RANK_MAP) as Array<keyof typeof TAB_RANK_MAP>).find((cat) =>
-        TAB_RANK_MAP[cat].includes(rank)
-      ) || 'soldier'
+    const derivedCategory = getRankCategory(rank)
 
     const formData = new FormData()
     formData.append('fullName', fullName)

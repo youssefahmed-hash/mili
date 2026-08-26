@@ -4,6 +4,7 @@ const express_1 = require("express");
 const services_controller_1 = require("./services.controller");
 const router = (0, express_1.Router)();
 router.get("/", services_controller_1.servicesController.getAll);
+router.get("/lineup", services_controller_1.servicesController.getLineup);
 router.get("/personnel/:personnelId", services_controller_1.servicesController.getByPersonnel);
 router.post("/", services_controller_1.servicesController.create);
 router.put("/:id", services_controller_1.servicesController.update);

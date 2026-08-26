@@ -6,8 +6,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.personnelService = exports.PersonnelService = void 0;
 const data_source_1 = require("../../config/data-source");
 const Personnel_1 = require("../../entities/Personnel");
+const Vacation_1 = require("../../entities/Vacation");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+// Timezone-safe YYYY-MM-DD parsing/formatting (local midnight, no UTC shift)
+const parseYmd = (s) => {
+    if (!s)
+        return new Date();
+    if (s instanceof Date) {
+        return new Date(s.getFullYear(), s.getMonth(), s.getDate());
+    }
+    const [y, m, d] = s.slice(0, 10).split('-').map(Number);
+    return new Date(y, m - 1, d);
+};
+const fmtYmd = (dt) => {
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, '0');
+    const d = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
 class PersonnelService {
     constructor() {
         this.repository = data_source_1.AppDataSource.getRepository(Personnel_1.Personnel);
@@ -122,6 +139,72 @@ class PersonnelService {
         catch (err) {
             console.error(`Error deleting local file ${fileUrl}:`, err);
         }
+    }
+    async getVacationLineup(dateStr) {
+        const today = parseYmd(dateStr);
+        today.setHours(0, 0, 0, 0);
+        const personnelList = await this.repository.find();
+        const vacationRepo = data_source_1.AppDataSource.getRepository(Vacation_1.Vacation);
+        const vacations = await vacationRepo.find();
+        // Group vacations by personnel and pick the earliest record that defines a cycle
+        const baseByPersonnel = {};
+        for (const v of vacations) {
+            const cycle = parseInt(v.cycle || '', 10);
+            if (!cycle || cycle <= 0)
+                continue;
+            const existing = baseByPersonnel[v.personnelId];
+            if (!existing || parseYmd(v.startDate).getTime() < parseYmd(existing.startDate).getTime()) {
+                baseByPersonnel[v.personnelId] = v;
+            }
+        }
+        const goingDown = [];
+        const comingUp = [];
+        const onVacation = [];
+        for (const p of personnelList) {
+            const base = baseByPersonnel[p.id];
+            if (!base)
+                continue;
+            const cycle = parseInt(base.cycle, 10);
+            const anchor = parseYmd(base.startDate);
+            anchor.setHours(0, 0, 0, 0);
+            if (anchor.getTime() > today.getTime())
+                continue;
+            const leaveDays = Math.max(1, Math.round((parseYmd(base.expectedReturnDate).getTime() - anchor.getTime()) / 86400000));
+            // Rotation period = service (cycle) + leave (leaveDays). After returning,
+            // the next descent happens cycle days later, so the full period is cycle + leaveDays.
+            const period = cycle + leaveDays;
+            const diffDays = Math.floor((today.getTime() - anchor.getTime()) / 86400000);
+            const k = Math.floor(diffDays / period);
+            const descent = new Date(anchor);
+            descent.setDate(descent.getDate() + k * period);
+            const ret = new Date(descent);
+            ret.setDate(ret.getDate() + leaveDays);
+            const info = {
+                id: p.id,
+                fullName: p.fullName,
+                rank: p.rank,
+                militaryId: p.militaryId,
+                unit: p.unit,
+                cycle: base.cycle,
+                nextDescent: fmtYmd(descent),
+                nextReturn: fmtYmd(ret)
+            };
+            if (today.getTime() === descent.getTime()) {
+                goingDown.push(info);
+            }
+            else if (today.getTime() === ret.getTime()) {
+                comingUp.push(info);
+            }
+            if (today.getTime() > descent.getTime() && today.getTime() < ret.getTime()) {
+                onVacation.push(info);
+            }
+        }
+        return {
+            date: fmtYmd(today),
+            goingDown,
+            comingUp,
+            onVacation
+        };
     }
 }
 exports.PersonnelService = PersonnelService;

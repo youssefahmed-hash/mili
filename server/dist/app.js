@@ -16,6 +16,7 @@ const security_routes_1 = __importDefault(require("./modules/security/security.r
 const services_routes_1 = __importDefault(require("./modules/services/services.routes"));
 const rewards_routes_1 = __importDefault(require("./modules/rewards/rewards.routes"));
 const penalties_routes_1 = __importDefault(require("./modules/penalties/penalties.routes"));
+const auth_routes_1 = __importDefault(require("./modules/auth/auth.routes"));
 const errorHandler_1 = require("./middlewares/errorHandler");
 const app = (0, express_1.default)();
 // Config CORS
@@ -44,6 +45,7 @@ app.use("/api/security", security_routes_1.default);
 app.use("/api/services", services_routes_1.default);
 app.use("/api/rewards", rewards_routes_1.default);
 app.use("/api/penalties", penalties_routes_1.default);
+app.use("/api/auth", auth_routes_1.default);
 // Global Error Handler
 app.use(errorHandler_1.errorHandler);
 exports.default = app;
