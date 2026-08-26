@@ -16,6 +16,9 @@ export class Vacation {
     @Column({ type: "varchar", length: 255 })
     vacationType!: string;
 
+    @Column({ type: "varchar", length: 10, nullable: true })
+    cycle!: string | null;
+
     @Column({ type: "date" })
     startDate!: Date;
 

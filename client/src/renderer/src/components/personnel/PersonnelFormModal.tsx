@@ -91,8 +91,6 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
   const [promotionCurrentGradeDate, setPromotionCurrentGradeDate] = useState('')
   const [promotionHigherRankDate, setPromotionHigherRankDate] = useState('')
   const [promotionHigherGradeDate, setPromotionHigherGradeDate] = useState('')
-  const [vacationCycle, setVacationCycle] = useState('28')
-  const [vacationAnchor, setVacationAnchor] = useState('')
   const [policeNumber, setPoliceNumber] = useState('')
   const [reserveDate, setReserveDate] = useState('')
   const [administrativeUnits, setAdministrativeUnits] = useState('')
@@ -175,8 +173,6 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
       setPromotionHigherGradeDate(
         target.promotionHigherGradeDate ? target.promotionHigherGradeDate.split('T')[0] : ''
       )
-      setVacationCycle(target.vacationCycle || '28')
-      setVacationAnchor(target.vacationAnchor ? target.vacationAnchor.split('T')[0] : '')
       setPoliceNumber(target.policeNumber || '')
       setReserveDate(target.reserveDate ? target.reserveDate.split('T')[0] : '')
       setAdministrativeUnits(
@@ -291,8 +287,6 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
     if (promotionHigherRankDate) formData.append('promotionHigherRankDate', promotionHigherRankDate)
     if (promotionHigherGradeDate)
       formData.append('promotionHigherGradeDate', promotionHigherGradeDate)
-    if (vacationCycle) formData.append('vacationCycle', vacationCycle)
-    if (vacationAnchor) formData.append('vacationAnchor', vacationAnchor)
     if (policeNumber) formData.append('policeNumber', policeNumber)
     if (reserveDate) formData.append('reserveDate', reserveDate)
     if (administrativeUnits) formData.append('administrativeUnits', administrativeUnits)
@@ -710,29 +704,6 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               options={performanceOptions}
               value={supervisor}
               onChange={(e) => setSupervisor(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div>
-          <h4 className="text-sm font-bold text-military-accent uppercase tracking-wider border-b border-white/5 pb-2 mb-4 text-start">
-            بيانات دورة الإجازات
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Select
-              label="دورة النزول (يوم)"
-              options={[
-                { value: '14', label: 'كل 14 يوم' },
-                { value: '28', label: 'كل 28 يوم' }
-              ]}
-              value={vacationCycle}
-              onChange={(e) => setVacationCycle(e.target.value)}
-            />
-            <Input
-              label="تاريخ أول نزول (مرجع الدورة)"
-              type="date"
-              value={vacationAnchor}
-              onChange={(e) => setVacationAnchor(e.target.value)}
             />
           </div>
         </div>

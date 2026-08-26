@@ -39,8 +39,6 @@ export interface Personnel {
   promotionCurrentGradeDate: string | null
   promotionHigherRankDate: string | null
   promotionHigherGradeDate: string | null
-  vacationCycle: string | null
-  vacationAnchor: string | null
   policeNumber: string | null
   reserveDate: string | null
   administrativeUnits: number | string | null
@@ -86,6 +84,7 @@ export interface Document {
 export interface Vacation {
   id: string
   vacationType: string
+  cycle: string | null
   startDate: string
   expectedReturnDate: string
   actualReturnDate: string | null

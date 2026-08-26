@@ -1,5 +1,6 @@
 import { AppDataSource } from "../../config/data-source";
 import { Personnel, PersonnelCategory } from "../../entities/Personnel";
+import { Vacation } from "../../entities/Vacation";
 import { Like, Equal } from "typeorm";
 import fs from "fs";
 import path from "path";
@@ -168,26 +169,47 @@ export class PersonnelService {
         const today = dateStr ? new Date(dateStr) : new Date();
         today.setHours(0, 0, 0, 0);
 
-        const all = await this.repository.find();
+        const personnelList = await this.repository.find();
+        const vacationRepo = AppDataSource.getRepository(Vacation);
+        const vacations = await vacationRepo.find();
+
+        // Group vacations by personnel and pick the earliest record that defines a cycle
+        const baseByPersonnel: Record<string, (typeof vacations)[number]> = {};
+        for (const v of vacations) {
+            const cycle = parseInt(v.cycle || '', 10);
+            if (![14, 28].includes(cycle)) continue;
+            const existing = baseByPersonnel[v.personnelId];
+            if (!existing || new Date(v.startDate) < new Date(existing.startDate)) {
+                baseByPersonnel[v.personnelId] = v;
+            }
+        }
+
         const goingDown: Record<string, unknown>[] = [];
         const comingUp: Record<string, unknown>[] = [];
         const onVacation: Record<string, unknown>[] = [];
 
-        for (const p of all) {
-            if (!p.vacationCycle || !p.vacationAnchor) continue;
-            const cycle = parseInt(p.vacationCycle, 10);
-            if (![14, 28].includes(cycle)) continue;
+        for (const p of personnelList) {
+            const base = baseByPersonnel[p.id];
+            if (!base) continue;
 
-            const anchor = new Date(p.vacationAnchor);
+            const cycle = parseInt(base.cycle as string, 10);
+            const anchor = new Date(base.startDate);
             anchor.setHours(0, 0, 0, 0);
             if (anchor > today) continue;
+
+            const leaveDays = Math.max(
+                1,
+                Math.round(
+                    (new Date(base.expectedReturnDate).getTime() - anchor.getTime()) / 86400000
+                )
+            );
 
             const diffDays = Math.floor((today.getTime() - anchor.getTime()) / 86400000);
             const k = Math.floor(diffDays / cycle);
             const descent = new Date(anchor);
             descent.setDate(descent.getDate() + k * cycle);
             const ret = new Date(descent);
-            ret.setDate(ret.getDate() + 14);
+            ret.setDate(ret.getDate() + leaveDays);
 
             const info = {
                 id: p.id,
@@ -195,7 +217,7 @@ export class PersonnelService {
                 rank: p.rank,
                 militaryId: p.militaryId,
                 unit: p.unit,
-                cycle: p.vacationCycle,
+                cycle: base.cycle,
                 nextDescent: descent.toISOString().slice(0, 10),
                 nextReturn: ret.toISOString().slice(0, 10)
             };

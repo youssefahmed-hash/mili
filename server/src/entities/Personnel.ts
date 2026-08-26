@@ -132,12 +132,6 @@ export class Personnel {
     @Column({ type: "date", nullable: true })
     promotionHigherGradeDate!: Date | null;
 
-    @Column({ type: "varchar", length: 10, nullable: true })
-    vacationCycle!: string | null;
-
-    @Column({ type: "date", nullable: true })
-    vacationAnchor!: Date | null;
-
     @Column({ type: "varchar", length: 100, nullable: true })
     policeNumber!: string | null;
 

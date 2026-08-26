@@ -22,6 +22,7 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [vacationType, setVacationType] = useState('إجازة سنوية')
+  const [cycle, setCycle] = useState('28')
   const [startDate, setStartDate] = useState('')
   const [expectedReturnDate, setExpectedReturnDate] = useState('')
   const [notes, setNotes] = useState('')
@@ -61,6 +62,7 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
       const res = await createVacation({
         personnelId: data.id,
         vacationType,
+        cycle,
         startDate,
         expectedReturnDate,
         notes,
@@ -122,6 +124,11 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
 
   const columns: Column<Vacation>[] = [
     { key: 'vacationType', label: 'نوع الإجازة' },
+    {
+      key: 'cycle',
+      label: 'الدورة',
+      render: (row) => (row.cycle ? `كل ${row.cycle} يوم` : '—')
+    },
     {
       key: 'startDate',
       label: 'تاريخ البدء',
@@ -194,6 +201,17 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
             options={typeOptions}
             value={vacationType}
             onChange={(e) => setVacationType(e.target.value)}
+          />
+        </div>
+        <div className="md:col-span-1">
+          <Select
+            label="دورة النزول (يوم)"
+            options={[
+              { value: '14', label: 'كل 14 يوم' },
+              { value: '28', label: 'كل 28 يوم' }
+            ]}
+            value={cycle}
+            onChange={(e) => setCycle(e.target.value)}
           />
         </div>
         <div>
