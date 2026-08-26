@@ -122,3 +122,36 @@ export interface ApiResponse<T = unknown> {
     totalPages: number
   }
 }
+
+export interface ServiceRecord {
+  id: string
+  personnelId: string
+  personnel?: Personnel
+  serviceDay: string
+  startTime: string
+  endTime: string
+  location: string
+  department: string
+  notes?: string | null
+  createdAt: string
+}
+
+export interface RewardRecord {
+  id: string
+  personnelId: string
+  personnel?: Personnel
+  rewardType: string
+  rewardDate: string
+  notes?: string | null
+  createdAt: string
+}
+
+export interface PenaltyRecord {
+  id: string
+  personnelId: string
+  personnel?: Personnel
+  penaltyType: string
+  penaltyDate: string
+  notes?: string | null
+  createdAt: string
+}

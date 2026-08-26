@@ -17,6 +17,9 @@ const Form_1 = require("./Form");
 const ClinicRecord_1 = require("./ClinicRecord");
 const OperationRecord_1 = require("./OperationRecord");
 const SecurityRecord_1 = require("./SecurityRecord");
+const Service_1 = require("./Service");
+const Reward_1 = require("./Reward");
+const Penalty_1 = require("./Penalty");
 let Personnel = class Personnel {
 };
 exports.Personnel = Personnel;
@@ -215,6 +218,18 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => SecurityRecord_1.SecurityRecord, (record) => record.personnel, { cascade: true }),
     __metadata("design:type", Array)
 ], Personnel.prototype, "securityRecords", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => Service_1.Service, (record) => record.personnel, { cascade: true }),
+    __metadata("design:type", Array)
+], Personnel.prototype, "services", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => Reward_1.Reward, (record) => record.personnel, { cascade: true }),
+    __metadata("design:type", Array)
+], Personnel.prototype, "rewards", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => Penalty_1.Penalty, (record) => record.personnel, { cascade: true }),
+    __metadata("design:type", Array)
+], Personnel.prototype, "penalties", void 0);
 exports.Personnel = Personnel = __decorate([
     (0, typeorm_1.Entity)("personnel")
 ], Personnel);

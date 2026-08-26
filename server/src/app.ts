@@ -8,6 +8,9 @@ import formsRouter from "./modules/forms/forms.routes";
 import clinicRouter from "./modules/clinic/clinic.routes";
 import operationsRouter from "./modules/operations/operations.routes";
 import securityRouter from "./modules/security/security.routes";
+import servicesRouter from "./modules/services/services.routes";
+import rewardsRouter from "./modules/rewards/rewards.routes";
+import penaltiesRouter from "./modules/penalties/penalties.routes";
 import { errorHandler } from "./middlewares/errorHandler";
 
 const app = express();
@@ -39,6 +42,9 @@ app.use("/api/forms", formsRouter);
 app.use("/api/clinic", clinicRouter);
 app.use("/api/operations", operationsRouter);
 app.use("/api/security", securityRouter);
+app.use("/api/services", servicesRouter);
+app.use("/api/rewards", rewardsRouter);
+app.use("/api/penalties", penaltiesRouter);
 
 // Global Error Handler
 app.use(errorHandler);

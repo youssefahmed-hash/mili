@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react'
 import { usePersonnelStore } from '../../../store/personnelStore'
 import { Drawer } from '../../ui/Drawer'
 import { Tabs, TabItem } from '../../ui/Tabs'
-import { User, FileText, Calendar, Phone, Briefcase } from 'lucide-react'
+import { User, FileText, Calendar, Phone, Briefcase, Award, ShieldAlert } from 'lucide-react'
 import { BasicInfoTab } from './BasicInfoTab'
 import { JobInfoTab } from './JobInfoTab'
 import { ContactInfoTab } from './ContactInfoTab'
 import { DocumentsTab } from './DocumentsTab'
 import { VacationsTab } from './VacationsTab'
+import { ServicesTab } from './ServicesTab'
+import { RewardsTab } from './RewardsTab'
+import { PenaltiesTab } from './PenaltiesTab'
 import { resolveFileUrl, isPdf } from '../../../utils/fileUrl'
 import { FileImage } from 'lucide-react'
 
@@ -32,7 +35,10 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ isOpen, onClose, p
     { id: 'job', label: 'البيانات الوظيفية', icon: <Briefcase className="h-4 w-4" /> },
     { id: 'contact', label: 'بيانات التواصل', icon: <Phone className="h-4 w-4" /> },
     { id: 'documents', label: 'المستندات', icon: <FileText className="h-4 w-4" /> },
-    { id: 'vacations', label: 'سجل الإجازات', icon: <Calendar className="h-4 w-4" /> }
+    { id: 'vacations', label: 'سجل الإجازات', icon: <Calendar className="h-4 w-4" /> },
+    { id: 'services', label: 'سجل الخدمات', icon: <Briefcase className="h-4 w-4" /> },
+    { id: 'rewards', label: 'المكافآت', icon: <Award className="h-4 w-4" /> },
+    { id: 'penalties', label: 'العقوبات', icon: <ShieldAlert className="h-4 w-4" /> }
   ]
 
   const renderTabContent = (): React.ReactNode => {
@@ -48,6 +54,12 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ isOpen, onClose, p
         return <DocumentsTab data={selectedPersonnel} />
       case 'vacations':
         return <VacationsTab data={selectedPersonnel} />
+      case 'services':
+        return <ServicesTab data={selectedPersonnel} />
+      case 'rewards':
+        return <RewardsTab data={selectedPersonnel} />
+      case 'penalties':
+        return <PenaltiesTab data={selectedPersonnel} />
       default:
         return <BasicInfoTab data={selectedPersonnel} />
     }

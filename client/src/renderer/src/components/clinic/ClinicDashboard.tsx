@@ -9,12 +9,14 @@ import { Select } from '../ui/Select'
 import { PersonnelSelect } from '../ui/PersonnelSelect'
 import { Tabs } from '../ui/Tabs'
 import { RECORD_TABS, TAB_RANK_MAP } from '../../constants/categories'
+import { useAppStore } from '../../store/appStore'
 import { getClinicRecords, createClinicRecord, deleteClinicRecord } from '../../api/clinic.api'
 import type { ClinicRecord } from '../../types/personnel'
 
 export const ClinicDashboard: React.FC = () => {
   const [records, setRecords] = useState<ClinicRecord[]>([])
   const [activeTab, setActiveTab] = useState<string>('all')
+  const { searchQuery } = useAppStore()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -108,8 +110,14 @@ export const ClinicDashboard: React.FC = () => {
     { value: 'غير لائق نهائياً', label: 'غير لائق نهائياً' }
   ]
 
+  const q = (searchQuery || '').trim().toLowerCase()
   const visibleRecords = records.filter(
-    (r) => !!r.personnel && TAB_RANK_MAP[activeTab].includes(r.personnel.rank)
+    (r) =>
+      !!r.personnel &&
+      TAB_RANK_MAP[activeTab].includes(r.personnel.rank) &&
+      (!q ||
+        r.personnel.fullName.toLowerCase().includes(q) ||
+        r.personnel.militaryId.toLowerCase().includes(q))
   )
 
   const columns: Column<ClinicRecord>[] = [

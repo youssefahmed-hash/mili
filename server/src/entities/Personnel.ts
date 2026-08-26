@@ -5,6 +5,9 @@ import { Form } from "./Form";
 import { ClinicRecord } from "./ClinicRecord";
 import { OperationRecord } from "./OperationRecord";
 import { SecurityRecord } from "./SecurityRecord";
+import { Service } from "./Service";
+import { Reward } from "./Reward";
+import { Penalty } from "./Penalty";
 
 export type PersonnelCategory = 'soldier' | 'non_commissioned_officer' | 'officer';
 export type PersonnelStatus = 'على رأس العمل' | 'إجازة' | 'موقوف' | 'منتهية خدمته';
@@ -158,4 +161,13 @@ export class Personnel {
 
     @OneToMany(() => SecurityRecord, (record) => record.personnel, { cascade: true })
     securityRecords!: SecurityRecord[];
+
+    @OneToMany(() => Service, (record) => record.personnel, { cascade: true })
+    services!: Service[];
+
+    @OneToMany(() => Reward, (record) => record.personnel, { cascade: true })
+    rewards!: Reward[];
+
+    @OneToMany(() => Penalty, (record) => record.personnel, { cascade: true })
+    penalties!: Penalty[];
 }

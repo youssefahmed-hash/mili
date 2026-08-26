@@ -9,6 +9,7 @@ import { Select } from '../ui/Select'
 import { PersonnelSelect } from '../ui/PersonnelSelect'
 import { Tabs } from '../ui/Tabs'
 import { RECORD_TABS, TAB_RANK_MAP } from '../../constants/categories'
+import { useAppStore } from '../../store/appStore'
 import {
   getOperationsRecords,
   createOperationRecord,
@@ -19,6 +20,7 @@ import type { OperationRecord } from '../../types/personnel'
 export const OperationsDashboard: React.FC = () => {
   const [records, setRecords] = useState<OperationRecord[]>([])
   const [activeTab, setActiveTab] = useState<string>('all')
+  const { searchQuery } = useAppStore()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -150,8 +152,14 @@ export const OperationsDashboard: React.FC = () => {
     }
   ]
 
+  const q = (searchQuery || '').trim().toLowerCase()
   const visibleRecords = records.filter(
-    (r) => !!r.personnel && TAB_RANK_MAP[activeTab].includes(r.personnel.rank)
+    (r) =>
+      !!r.personnel &&
+      TAB_RANK_MAP[activeTab].includes(r.personnel.rank) &&
+      (!q ||
+        r.personnel.fullName.toLowerCase().includes(q) ||
+        r.personnel.militaryId.toLowerCase().includes(q))
   )
 
   const stats = [
