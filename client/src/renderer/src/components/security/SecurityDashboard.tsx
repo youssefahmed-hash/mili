@@ -118,7 +118,7 @@ export const SecurityDashboard: React.FC = () => {
     { key: 'eventTime', label: 'التوقيت' },
     {
       key: 'status',
-      label: 'الحالة',
+      label: 'التمام',
       render: (row) => {
         const isAlert = row.status.includes('الاحتجاز')
         const isSafe = row.status.includes('آمن') || row.status.includes('مكتمل')
@@ -273,7 +273,7 @@ export const SecurityDashboard: React.FC = () => {
             placeholder="مثال: 14:22"
           />
           <Input
-            label="الحالة"
+            label="التمام"
             value={formData.status}
             onChange={(e) => setFormData((p) => ({ ...p, status: e.target.value }))}
             placeholder="مثال: قيد المراجعة"

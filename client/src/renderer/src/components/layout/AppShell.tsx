@@ -6,6 +6,8 @@ import { PersonnelModule } from '../personnel/PersonnelModule'
 import { ClinicDashboard } from '../clinic/ClinicDashboard'
 import { OperationsDashboard } from '../operations/OperationsDashboard'
 import { SecurityDashboard } from '../security/SecurityDashboard'
+import { UsersDashboard } from '../users/UsersDashboard'
+import { VacationLineup } from '../personnel/VacationLineup'
 
 export const AppShell: React.FC = () => {
   const { activeTab } = useAppStore()
@@ -14,12 +16,16 @@ export const AppShell: React.FC = () => {
     switch (activeTab) {
       case 'الأفراد':
         return <PersonnelModule />
+      case 'طابور الاجازات':
+        return <VacationLineup />
       case 'العيادة':
         return <ClinicDashboard />
       case 'العمليات':
         return <OperationsDashboard />
       case 'الأمن':
         return <SecurityDashboard />
+      case 'المستخدمين':
+        return <UsersDashboard />
       default:
         return <PersonnelModule />
     }

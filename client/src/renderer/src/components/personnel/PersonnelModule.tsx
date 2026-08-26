@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { usePersonnelStore } from '../../store/personnelStore'
 import { useAppStore } from '../../store/appStore'
+import { useAuthStore } from '../../store/authStore'
 import { PersonnelToolbar } from './PersonnelToolbar'
 import { PersonnelTable } from './PersonnelTable'
 import { PersonnelFormModal } from './PersonnelFormModal'
@@ -12,6 +13,7 @@ import type { Personnel } from '../../types/personnel'
 
 export const PersonnelModule: React.FC = () => {
   const { searchQuery } = useAppStore()
+  const user = useAuthStore((s) => s.user)
   const {
     personnelList,
     fetchPersonnelList,
@@ -68,7 +70,11 @@ export const PersonnelModule: React.FC = () => {
     <div className="flex flex-col gap-6 w-full">
       {/* Page Header Area */}
       <div className="flex flex-col text-start">
-        <h2 className="text-2xl font-black text-white">إدارة شؤون ضباط وأفراد القوات المسلحة</h2>
+        <h2 className="text-2xl font-black text-white">
+          {user?.userType === 'داخلية'
+            ? 'إدارة شؤون المجندين'
+            : 'إدارة شؤون ضباط وأفراد القوات المسلحة'}
+        </h2>
         <p className="text-sm text-gray-400">
           إضافة وتعديل بيانات الأفراد العسكريين، ومتابعة سجلات إجازاتهم، مستنداتهم ونماذج شؤون
           الأفراد الخاصة بهم.

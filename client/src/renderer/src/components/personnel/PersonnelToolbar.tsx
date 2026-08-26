@@ -13,10 +13,19 @@ export const PersonnelToolbar: React.FC<PersonnelToolbarProps> = ({ onAddClick }
 
   const statusOptions = [
     { value: '', label: 'كل الحالات' },
-    { value: 'على رأس العمل', label: 'على رأس العمل' },
-    { value: 'إجازة', label: 'إجازة' },
-    { value: 'موقوف', label: 'موقوف' },
-    { value: 'منتهية خدمته', label: 'منتهية خدمته' }
+    { value: 'داخل القطاع', label: 'داخل القطاع' },
+    { value: 'اجازه', label: 'اجازه' },
+    { value: 'ماموريه', label: 'ماموريه' },
+    { value: 'ملحق منطقه', label: 'ملحق منطقه' },
+    { value: 'ملحق جهاز سطع', label: 'ملحق جهاز سطع' },
+    { value: 'ملحق جهاز الامن', label: 'ملحق جهاز الامن' },
+    { value: 'ملحق ك9', label: 'ملحق ك9' },
+    { value: 'مسح امن جهاز', label: 'مسح امن جهاز' },
+    { value: 'مسح امنى مركز تدريب', label: 'مسح امنى مركز تدريب' },
+    { value: 'عرض مستشفى', label: 'عرض مستشفى' },
+    { value: 'غياب', label: 'غياب' },
+    { value: 'علامه 91', label: 'علامه 91' },
+    { value: 'نويبع', label: 'نويبع' }
   ]
 
   const unitOptions = [

@@ -134,7 +134,7 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
     },
     {
       key: 'status',
-      label: 'الحالة',
+      label: 'التمام',
       render: (row) => (
         <Badge variant={statusBadgeVariants[row.status] || 'warning'}>{row.status}</Badge>
       )

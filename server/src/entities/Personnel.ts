@@ -10,7 +10,7 @@ import { Reward } from "./Reward";
 import { Penalty } from "./Penalty";
 
 export type PersonnelCategory = 'soldier' | 'non_commissioned_officer' | 'officer';
-export type PersonnelStatus = 'على رأس العمل' | 'إجازة' | 'موقوف' | 'منتهية خدمته';
+export type PersonnelType = 'حربية' | 'داخلية';
 
 @Entity("personnel")
 export class Personnel {
@@ -77,6 +77,13 @@ export class Personnel {
     @Column({ type: "varchar", length: 255 })
     unit!: string;
 
+    @Column({
+        type: "enum",
+        enum: ['حربية', 'داخلية'],
+        default: 'حربية'
+    })
+    personnelType!: PersonnelType;
+
     @Column({ type: "varchar", length: 255, nullable: true })
     specialization!: string | null;
 
@@ -86,12 +93,83 @@ export class Personnel {
     @Column({ type: "date", nullable: true })
     serviceStartDate!: Date | null;
 
-    @Column({
-        type: "enum",
-        enum: ['على رأس العمل', 'إجازة', 'موقوف', 'منتهية خدمته'],
-        default: 'على رأس العمل'
-    })
-    status!: PersonnelStatus;
+    @Column({ type: "varchar", length: 100, default: 'داخل القطاع' })
+    status!: string;
+
+    @Column({ type: "date", nullable: true })
+    enlistmentDate!: Date | null;
+
+    @Column({ type: "date", nullable: true })
+    dischargeDate!: Date | null;
+
+    @Column({ type: "date", nullable: true })
+    joiningDate!: Date | null;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    weapon!: string | null;
+
+    @Column({ type: "date", nullable: true })
+    lastLeaveReturnDate!: Date | null;
+
+    @Column({ type: "int", nullable: true })
+    guardCount!: number | null;
+
+    @Column({ type: "varchar", length: 100, nullable: true })
+    seniorityNumber!: string | null;
+
+    @Column({ type: "varchar", length: 100, nullable: true })
+    grade!: string | null;
+
+    @Column({ type: "date", nullable: true })
+    promotionCurrentRankDate!: Date | null;
+
+    @Column({ type: "date", nullable: true })
+    promotionCurrentGradeDate!: Date | null;
+
+    @Column({ type: "date", nullable: true })
+    promotionHigherRankDate!: Date | null;
+
+    @Column({ type: "date", nullable: true })
+    promotionHigherGradeDate!: Date | null;
+
+    @Column({ type: "varchar", length: 10, nullable: true })
+    vacationCycle!: string | null;
+
+    @Column({ type: "date", nullable: true })
+    vacationAnchor!: Date | null;
+
+    @Column({ type: "varchar", length: 100, nullable: true })
+    policeNumber!: string | null;
+
+    @Column({ type: "date", nullable: true })
+    reserveDate!: Date | null;
+
+    @Column({ type: "int", nullable: true })
+    administrativeUnits!: number | null;
+
+    @Column({ type: "varchar", length: 500, nullable: true })
+    militaryTrials!: string | null;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    affiliatedUnit!: string | null;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    display!: string | null;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    strikeOff!: string | null;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    injured!: string | null;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    clinics!: string | null;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    medicalCommissionLeaves!: string | null;
+
+    @Column({ type: "varchar", length: 50, nullable: true })
+    weaponBan!: string | null;
 
     @Column({ type: "varchar", length: 255, nullable: true })
     education!: string | null;

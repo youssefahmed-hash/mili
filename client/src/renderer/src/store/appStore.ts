@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type TabType = 'الأفراد' | 'العيادة' | 'العمليات' | 'الأمن'
+export type TabType = 'الأفراد' | 'طابور الاجازات' | 'العيادة' | 'العمليات' | 'الأمن' | 'المستخدمين'
 
 interface AppState {
   activeTab: TabType

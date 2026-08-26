@@ -36,6 +36,21 @@ export class ClinicRecord {
   @Column({ type: "date", nullable: true })
   examinationDate!: Date | null;
 
+  @Column({ type: "varchar", length: 50, default: "حربية" })
+  clinicType!: string;
+
+  @Column({ type: "varchar", length: 100, nullable: true })
+  carnetNumber!: string | null;
+
+  @Column({ type: "varchar", length: 100, nullable: true })
+  specialty!: string | null;
+
+  @Column({ type: "text", nullable: true })
+  diagnosis!: string | null;
+
+  @Column({ type: "text", nullable: true })
+  treatment!: string | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 }

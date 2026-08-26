@@ -34,3 +34,11 @@ export const TAB_RANK_MAP: Record<string, string[]> = {
   non_commissioned_officer: ['عريف', 'رقيب', 'رقيب أول', 'مساعد', 'مساعد أول'],
   officer: ['ملازم', 'ملازم أول', 'نقيب', 'رائد', 'مقدم', 'عقيد', 'عميد', 'لواء']
 }
+
+export type RankCategory = 'soldier' | 'non_commissioned_officer' | 'officer'
+
+export const getRankCategory = (rank: string): RankCategory => {
+  if (TAB_RANK_MAP.officer.includes(rank)) return 'officer'
+  if (TAB_RANK_MAP.non_commissioned_officer.includes(rank)) return 'non_commissioned_officer'
+  return 'soldier'
+}

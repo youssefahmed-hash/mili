@@ -125,7 +125,7 @@ export const OperationsDashboard: React.FC = () => {
     { key: 'missionDate', label: 'تاريخ البدء' },
     {
       key: 'status',
-      label: 'الحالة',
+      label: 'التمام',
       render: (row) => {
         const isActive = row.status === 'نشطة'
         const isDone = row.status === 'مكتملة'

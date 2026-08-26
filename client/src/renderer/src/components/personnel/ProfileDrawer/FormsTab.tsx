@@ -118,7 +118,7 @@ export const FormsTab: React.FC<FormsTabProps> = ({ data }) => {
       label: 'تاريخ الإنشاء',
       render: (row) => <span>{new Date(row.createdAt).toLocaleDateString('ar-EG')}</span>
     },
-    { key: 'status', label: 'الحالة' },
+    { key: 'status', label: 'التمام' },
     {
       key: 'actions',
       label: 'الإجراءات',

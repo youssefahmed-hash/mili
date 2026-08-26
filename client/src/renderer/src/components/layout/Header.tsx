@@ -1,8 +1,11 @@
 import React from 'react'
-import { Shield, User } from 'lucide-react'
+import { Shield, User, LogOut } from 'lucide-react'
 import { GlobalSearch } from './GlobalSearch'
+import { useAuthStore } from '../../store/authStore'
 
 export const Header: React.FC = () => {
+  const { user, logout } = useAuthStore()
+
   return (
     <header className="h-16 border-b border-white/5 bg-military-800/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-40">
       {/* Right side: System Brand */}
@@ -25,17 +28,26 @@ export const Header: React.FC = () => {
         <GlobalSearch />
       </div>
 
-      {/* Left side: Profile Badge */}
+      {/* Left side: Profile Badge + Logout */}
       <div className="flex items-center gap-3 bg-military-900/60 border border-white/5 rounded-full py-1.5 ps-4 pe-2">
         <div className="flex flex-col text-end">
-          <span className="text-sm font-bold text-white leading-tight">مسؤول النظام</span>
+          <span className="text-sm font-bold text-white leading-tight">
+            {user?.fullName || user?.username || 'مستخدم'}
+          </span>
           <span className="text-[10px] text-military-accent font-semibold leading-tight">
-            الرتبة: عميد
+            {user?.role === 'admin' ? 'مدير النظام' : 'مستخدم'} • {user?.department || '—'}
           </span>
         </div>
         <div className="h-8 w-8 rounded-full bg-military-primary flex items-center justify-center border border-white/10 shadow-lg">
           <User className="h-4 w-4 text-white" />
         </div>
+        <button
+          onClick={logout}
+          title="تسجيل الخروج"
+          className="h-8 w-8 rounded-full flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
       </div>
     </header>
   )

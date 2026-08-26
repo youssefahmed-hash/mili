@@ -1,5 +1,5 @@
 export type PersonnelCategory = 'soldier' | 'non_commissioned_officer' | 'officer'
-export type PersonnelStatus = 'على رأس العمل' | 'إجازة' | 'موقوف' | 'منتهية خدمته'
+export type PersonnelType = 'حربية' | 'داخلية'
 
 export interface Personnel {
   id: string
@@ -22,10 +22,36 @@ export interface Personnel {
   motherWork: string | null
   motherPhone: string | null
   unit: string
+  personnelType: PersonnelType
   specialization: string | null
   appointmentDate: string | null
   serviceStartDate: string | null
-  status: PersonnelStatus
+  status: string
+  enlistmentDate: string | null
+  dischargeDate: string | null
+  joiningDate: string | null
+  weapon: string | null
+  lastLeaveReturnDate: string | null
+  guardCount: number | string | null
+  seniorityNumber: string | null
+  grade: string | null
+  promotionCurrentRankDate: string | null
+  promotionCurrentGradeDate: string | null
+  promotionHigherRankDate: string | null
+  promotionHigherGradeDate: string | null
+  vacationCycle: string | null
+  vacationAnchor: string | null
+  policeNumber: string | null
+  reserveDate: string | null
+  administrativeUnits: number | string | null
+  militaryTrials: string | null
+  affiliatedUnit: string | null
+  display: string | null
+  strikeOff: string | null
+  injured: string | null
+  clinics: string | null
+  medicalCommissionLeaves: string | null
+  weaponBan: string | null
   education: string | null
   phone: string | null
   email: string | null
@@ -84,6 +110,11 @@ export interface ClinicRecord {
   medicalStatus: string
   notes: string | null
   examinationDate: string | null
+  clinicType: string
+  carnetNumber: string | null
+  specialty: string | null
+  diagnosis: string | null
+  treatment: string | null
   createdAt: string
   personnelId: string
   personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank' | 'category'>
@@ -121,6 +152,24 @@ export interface ApiResponse<T = unknown> {
     limit: number
     totalPages: number
   }
+}
+
+export interface VacationLineupPerson {
+  id: string
+  fullName: string
+  rank: string
+  militaryId: string
+  unit: string
+  cycle: string
+  nextDescent: string
+  nextReturn: string
+}
+
+export interface VacationLineup {
+  date: string
+  goingDown: VacationLineupPerson[]
+  comingUp: VacationLineupPerson[]
+  onVacation: VacationLineupPerson[]
 }
 
 export interface ServiceRecord {

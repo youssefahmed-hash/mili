@@ -108,6 +108,16 @@ export class PersonnelController {
             next(err);
         }
     }
+
+    async getVacationLineup(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { date } = req.query;
+            const result = await personnelService.getVacationLineup(date as string | undefined);
+            return successResponse(res, result, "تم جلب طابور الإجازات بنجاح");
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export const personnelController = new PersonnelController();

@@ -11,6 +11,7 @@ import securityRouter from "./modules/security/security.routes";
 import servicesRouter from "./modules/services/services.routes";
 import rewardsRouter from "./modules/rewards/rewards.routes";
 import penaltiesRouter from "./modules/penalties/penalties.routes";
+import authRouter from "./modules/auth/auth.routes";
 import { errorHandler } from "./middlewares/errorHandler";
 
 const app = express();
@@ -45,6 +46,7 @@ app.use("/api/security", securityRouter);
 app.use("/api/services", servicesRouter);
 app.use("/api/rewards", rewardsRouter);
 app.use("/api/penalties", penaltiesRouter);
+app.use("/api/auth", authRouter);
 
 // Global Error Handler
 app.use(errorHandler);

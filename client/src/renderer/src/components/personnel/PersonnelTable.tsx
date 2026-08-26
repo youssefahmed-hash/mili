@@ -30,10 +30,12 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
   onDeleteClick
 }) => {
   const statusBadgeVariants: Record<string, 'success' | 'warning' | 'danger' | 'secondary'> = {
-    'على رأس العمل': 'success',
-    إجازة: 'warning',
-    موقوف: 'danger',
-    'منتهية خدمته': 'secondary'
+    'داخل القطاع': 'success',
+    اجازه: 'warning',
+    ماموريه: 'secondary',
+    'عرض مستشفى': 'danger',
+    غياب: 'danger',
+    'علامه 91': 'warning'
   }
 
   const columns: Column<Personnel>[] = [

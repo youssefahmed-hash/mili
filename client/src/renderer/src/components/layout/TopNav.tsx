@@ -1,16 +1,31 @@
 import React from 'react'
-import { Users, HeartPulse, Crosshair, ShieldCheck } from 'lucide-react'
+import { Users, CalendarClock, HeartPulse, Crosshair, ShieldCheck, UserCog } from 'lucide-react'
 import { useAppStore, TabType } from '../../store/appStore'
+import { useAuthStore } from '../../store/authStore'
 
 export const TopNav: React.FC = () => {
   const { activeTab, setActiveTab } = useAppStore()
+  const user = useAuthStore((s) => s.user)
 
   const navigationItems = [
-    { id: 'الأفراد' as TabType, label: 'الأفراد', icon: Users },
+    {
+      id: 'الأفراد' as TabType,
+      label: user?.userType === 'داخلية' ? 'الشئون مجندين' : 'الأفراد',
+      icon: Users
+    },
+    { id: 'طابور الاجازات' as TabType, label: 'طابور الاجازات', icon: CalendarClock },
     { id: 'العيادة' as TabType, label: 'العيادة', icon: HeartPulse },
     { id: 'العمليات' as TabType, label: 'العمليات', icon: Crosshair },
     { id: 'الأمن' as TabType, label: 'الأمن', icon: ShieldCheck }
   ]
+
+  if (user?.role === 'admin') {
+    navigationItems.push({
+      id: 'المستخدمين' as TabType,
+      label: 'المستخدمين',
+      icon: UserCog
+    })
+  }
 
   return (
     <div className="flex bg-military-800 border-b border-white/5 px-8 select-none">

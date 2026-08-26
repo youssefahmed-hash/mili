@@ -7,7 +7,14 @@ import { Button } from '../ui/Button'
 import { Upload } from 'lucide-react'
 import type { Personnel } from '../../types/personnel'
 import { resolveFileUrl, isPdf } from '../../utils/fileUrl'
-import { TAB_RANK_MAP } from '../../constants/categories'
+import { TAB_RANK_MAP, getRankCategory } from '../../constants/categories'
+import { getDepartmentOptions } from '../../constants/departments'
+import {
+  PERSONNEL_TYPE_OPTIONS,
+  TAMAM_OPTIONS,
+  WEAPON_BAN_OPTIONS
+} from '../../constants/personnelFields'
+import { useAuthStore } from '../../store/authStore'
 
 const ATTACHMENTS = [
   { key: 'cardImage', label: 'صورة البطاقة', hint: 'صورة أو ملف PDF' },
@@ -27,6 +34,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
   target
 }) => {
   const { addPersonnel, editPersonnel, fetchPersonnelList, error: storeError } = usePersonnelStore()
+  const { user: authUser } = useAuthStore()
   const isEdit = !!target
 
   // Local form states
@@ -46,11 +54,13 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
   const [motherHealthStatus, setMotherHealthStatus] = useState('حي')
   const [motherWork, setMotherWork] = useState('')
   const [motherPhone, setMotherPhone] = useState('')
-  const [unit, setUnit] = useState('الكتيبة الأولى')
+  const [unit, setUnit] = useState(
+    () => getDepartmentOptions(authUser?.userType === 'داخلية' ? 'داخلية' : 'حربية')[0]?.value || ''
+  )
   const [specialization, setSpecialization] = useState('')
   const [appointmentDate, setAppointmentDate] = useState('')
   const [serviceStartDate, setServiceStartDate] = useState('')
-  const [status, setStatus] = useState('على رأس العمل')
+  const [status, setStatus] = useState('داخل القطاع')
   const [education, setEducation] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -66,6 +76,34 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
   const [subordinates, setSubordinates] = useState('')
   const [supervisor, setSupervisor] = useState('')
   const [batchDate, setBatchDate] = useState('')
+  const [personnelType, setPersonnelType] = useState<'حربية' | 'داخلية'>(
+    authUser?.userType === 'داخلية' ? 'داخلية' : 'حربية'
+  )
+  const [enlistmentDate, setEnlistmentDate] = useState('')
+  const [dischargeDate, setDischargeDate] = useState('')
+  const [joiningDate, setJoiningDate] = useState('')
+  const [weapon, setWeapon] = useState('')
+  const [lastLeaveReturnDate, setLastLeaveReturnDate] = useState('')
+  const [guardCount, setGuardCount] = useState('')
+  const [seniorityNumber, setSeniorityNumber] = useState('')
+  const [grade, setGrade] = useState('')
+  const [promotionCurrentRankDate, setPromotionCurrentRankDate] = useState('')
+  const [promotionCurrentGradeDate, setPromotionCurrentGradeDate] = useState('')
+  const [promotionHigherRankDate, setPromotionHigherRankDate] = useState('')
+  const [promotionHigherGradeDate, setPromotionHigherGradeDate] = useState('')
+  const [vacationCycle, setVacationCycle] = useState('28')
+  const [vacationAnchor, setVacationAnchor] = useState('')
+  const [policeNumber, setPoliceNumber] = useState('')
+  const [reserveDate, setReserveDate] = useState('')
+  const [administrativeUnits, setAdministrativeUnits] = useState('')
+  const [militaryTrials, setMilitaryTrials] = useState('')
+  const [affiliatedUnit, setAffiliatedUnit] = useState('')
+  const [display, setDisplay] = useState('')
+  const [strikeOff, setStrikeOff] = useState('')
+  const [injured, setInjured] = useState('')
+  const [clinics, setClinics] = useState('')
+  const [medicalCommissionLeaves, setMedicalCommissionLeaves] = useState('')
+  const [weaponBan, setWeaponBan] = useState('غير ممنوع')
 
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
@@ -114,9 +152,47 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
       setMotherPhone(target.motherPhone || '')
       setUnit(target.unit || 'الكتيبة الأولى')
       setSpecialization(target.specialization || '')
+      setPersonnelType(target.personnelType || 'حربية')
+      setEnlistmentDate(target.enlistmentDate ? target.enlistmentDate.split('T')[0] : '')
+      setDischargeDate(target.dischargeDate ? target.dischargeDate.split('T')[0] : '')
+      setJoiningDate(target.joiningDate ? target.joiningDate.split('T')[0] : '')
+      setWeapon(target.weapon || '')
+      setLastLeaveReturnDate(
+        target.lastLeaveReturnDate ? target.lastLeaveReturnDate.split('T')[0] : ''
+      )
+      setGuardCount(target.guardCount != null ? String(target.guardCount) : '')
+      setSeniorityNumber(target.seniorityNumber || '')
+      setGrade(target.grade || '')
+      setPromotionCurrentRankDate(
+        target.promotionCurrentRankDate ? target.promotionCurrentRankDate.split('T')[0] : ''
+      )
+      setPromotionCurrentGradeDate(
+        target.promotionCurrentGradeDate ? target.promotionCurrentGradeDate.split('T')[0] : ''
+      )
+      setPromotionHigherRankDate(
+        target.promotionHigherRankDate ? target.promotionHigherRankDate.split('T')[0] : ''
+      )
+      setPromotionHigherGradeDate(
+        target.promotionHigherGradeDate ? target.promotionHigherGradeDate.split('T')[0] : ''
+      )
+      setVacationCycle(target.vacationCycle || '28')
+      setVacationAnchor(target.vacationAnchor ? target.vacationAnchor.split('T')[0] : '')
+      setPoliceNumber(target.policeNumber || '')
+      setReserveDate(target.reserveDate ? target.reserveDate.split('T')[0] : '')
+      setAdministrativeUnits(
+        target.administrativeUnits != null ? String(target.administrativeUnits) : ''
+      )
+      setMilitaryTrials(target.militaryTrials || '')
+      setAffiliatedUnit(target.affiliatedUnit || '')
+      setDisplay(target.display || '')
+      setStrikeOff(target.strikeOff || '')
+      setInjured(target.injured || '')
+      setClinics(target.clinics || '')
+      setMedicalCommissionLeaves(target.medicalCommissionLeaves || '')
+      setWeaponBan(target.weaponBan || 'غير ممنوع')
       setAppointmentDate(target.appointmentDate ? target.appointmentDate.split('T')[0] : '')
       setServiceStartDate(target.serviceStartDate ? target.serviceStartDate.split('T')[0] : '')
-      setStatus(target.status || 'على رأس العمل')
+      setStatus(target.status || 'داخل القطاع')
       setEducation(target.education || '')
       setPhone(target.phone || '')
       setEmail(target.email || '')
@@ -199,6 +275,35 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
     formData.append('motherWork', motherWork)
     formData.append('motherPhone', motherPhone)
     formData.append('unit', unit)
+    formData.append('personnelType', personnelType)
+    if (enlistmentDate) formData.append('enlistmentDate', enlistmentDate)
+    if (dischargeDate) formData.append('dischargeDate', dischargeDate)
+    if (joiningDate) formData.append('joiningDate', joiningDate)
+    if (weapon) formData.append('weapon', weapon)
+    if (lastLeaveReturnDate) formData.append('lastLeaveReturnDate', lastLeaveReturnDate)
+    if (guardCount) formData.append('guardCount', guardCount)
+    if (seniorityNumber) formData.append('seniorityNumber', seniorityNumber)
+    if (grade) formData.append('grade', grade)
+    if (promotionCurrentRankDate)
+      formData.append('promotionCurrentRankDate', promotionCurrentRankDate)
+    if (promotionCurrentGradeDate)
+      formData.append('promotionCurrentGradeDate', promotionCurrentGradeDate)
+    if (promotionHigherRankDate) formData.append('promotionHigherRankDate', promotionHigherRankDate)
+    if (promotionHigherGradeDate)
+      formData.append('promotionHigherGradeDate', promotionHigherGradeDate)
+    if (vacationCycle) formData.append('vacationCycle', vacationCycle)
+    if (vacationAnchor) formData.append('vacationAnchor', vacationAnchor)
+    if (policeNumber) formData.append('policeNumber', policeNumber)
+    if (reserveDate) formData.append('reserveDate', reserveDate)
+    if (administrativeUnits) formData.append('administrativeUnits', administrativeUnits)
+    if (militaryTrials) formData.append('militaryTrials', militaryTrials)
+    if (affiliatedUnit) formData.append('affiliatedUnit', affiliatedUnit)
+    if (display) formData.append('display', display)
+    if (strikeOff) formData.append('strikeOff', strikeOff)
+    if (injured) formData.append('injured', injured)
+    if (clinics) formData.append('clinics', clinics)
+    if (medicalCommissionLeaves) formData.append('medicalCommissionLeaves', medicalCommissionLeaves)
+    if (weaponBan) formData.append('weaponBan', weaponBan)
     formData.append('specialization', specialization)
     if (appointmentDate) formData.append('appointmentDate', appointmentDate)
     if (serviceStartDate) formData.append('serviceStartDate', serviceStartDate)
@@ -244,12 +349,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
     }
   }
 
-  const statusOptions = [
-    { value: 'على رأس العمل', label: 'على رأس العمل' },
-    { value: 'إجازة', label: 'إجازة' },
-    { value: 'موقوف', label: 'موقوف' },
-    { value: 'منتهية خدمته', label: 'منتهية خدمته' }
-  ]
+  const statusOptions = TAMAM_OPTIONS
 
   const rankOptions = [
     { value: 'جندي', label: 'جندي' },
@@ -285,14 +385,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
     { value: 'منفصلين', label: 'منفصلين (سكن مختلف)' }
   ]
 
-  const unitOptions = [
-    { value: 'الكتيبة الأولى', label: 'الكتيبة الأولى' },
-    { value: 'الكتيبة الثانية', label: 'الكتيبة الثانية' },
-    { value: 'الكتيبة الثالثة', label: 'الكتيبة الثالثة' },
-    { value: 'اللواء الرابع عشر', label: 'اللواء الرابع عشر' },
-    { value: 'قيادة المنطقة الشرقية', label: 'قيادة المنطقة الشرقية' },
-    { value: 'مقر القيادة العامة', label: 'مقر القيادة العامة' }
-  ]
+  const unitOptions = getDepartmentOptions(authUser?.userType === 'داخلية' ? 'داخلية' : 'حربية')
 
   const performanceOptions = [
     { value: 'ممتاز', label: 'ممتاز' },
@@ -552,6 +645,12 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
             />
+            <Select
+              label="حربية / داخلية"
+              options={PERSONNEL_TYPE_OPTIONS}
+              value={personnelType}
+              onChange={(e) => setPersonnelType(e.target.value as 'حربية' | 'داخلية')}
+            />
             <Input
               label="التخصص"
               value={specialization}
@@ -569,12 +668,6 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               type="date"
               value={serviceStartDate}
               onChange={(e) => setServiceStartDate(e.target.value)}
-            />
-            <Select
-              label="الحالة العسكرية حالياً"
-              options={statusOptions}
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
             />
             <Select
               label="تقييم الأداء الأخير"
@@ -620,6 +713,274 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
             />
           </div>
         </div>
+
+        <div>
+          <h4 className="text-sm font-bold text-military-accent uppercase tracking-wider border-b border-white/5 pb-2 mb-4 text-start">
+            بيانات دورة الإجازات
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Select
+              label="دورة النزول (يوم)"
+              options={[
+                { value: '14', label: 'كل 14 يوم' },
+                { value: '28', label: 'كل 28 يوم' }
+              ]}
+              value={vacationCycle}
+              onChange={(e) => setVacationCycle(e.target.value)}
+            />
+            <Input
+              label="تاريخ أول نزول (مرجع الدورة)"
+              type="date"
+              value={vacationAnchor}
+              onChange={(e) => setVacationAnchor(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {personnelType === 'حربية' &&
+          (() => {
+            const cat = getRankCategory(rank)
+            if (cat === 'officer') {
+              return (
+                <div>
+                  <h4 className="text-sm font-bold text-military-accent uppercase tracking-wider border-b border-white/5 pb-2 mb-4 text-start">
+                    بيانات عسكرية (ضابط - حربية)
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Input
+                      label="رقم اقدميه"
+                      value={seniorityNumber}
+                      onChange={(e) => setSeniorityNumber(e.target.value)}
+                      placeholder="رقم الاقدمية"
+                    />
+                    <Input
+                      label="السلاح"
+                      value={weapon}
+                      onChange={(e) => setWeapon(e.target.value)}
+                      placeholder="مثال: مشاة"
+                    />
+                    <Input
+                      label="تاريخ التجنيد"
+                      type="date"
+                      value={enlistmentDate}
+                      onChange={(e) => setEnlistmentDate(e.target.value)}
+                    />
+                    <Input
+                      label="تاريخ الضم"
+                      type="date"
+                      value={joiningDate}
+                      onChange={(e) => setJoiningDate(e.target.value)}
+                    />
+                    <Input
+                      label="تاريخ ترقى للرتبه الحاليه"
+                      type="date"
+                      value={promotionCurrentRankDate}
+                      onChange={(e) => setPromotionCurrentRankDate(e.target.value)}
+                    />
+                    <Input
+                      label="تاريخ ترقى للرتبه الاعلى"
+                      type="date"
+                      value={promotionHigherRankDate}
+                      onChange={(e) => setPromotionHigherRankDate(e.target.value)}
+                    />
+                    <Input
+                      label="اخر عوده"
+                      type="date"
+                      value={lastLeaveReturnDate}
+                      onChange={(e) => setLastLeaveReturnDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )
+            }
+            if (cat === 'non_commissioned_officer') {
+              return (
+                <div>
+                  <h4 className="text-sm font-bold text-military-accent uppercase tracking-wider border-b border-white/5 pb-2 mb-4 text-start">
+                    بيانات عسكرية (صف ضابط - حربية)
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Input
+                      label="الدرجه"
+                      value={grade}
+                      onChange={(e) => setGrade(e.target.value)}
+                      placeholder="مثال: رقيب أول"
+                    />
+                    <Input
+                      label="رقم اقدميه"
+                      value={seniorityNumber}
+                      onChange={(e) => setSeniorityNumber(e.target.value)}
+                      placeholder="رقم الاقدمية"
+                    />
+                    <Input
+                      label="السلاح"
+                      value={weapon}
+                      onChange={(e) => setWeapon(e.target.value)}
+                      placeholder="مثال: مشاة"
+                    />
+                    <Input
+                      label="تاريخ التجنيد"
+                      type="date"
+                      value={enlistmentDate}
+                      onChange={(e) => setEnlistmentDate(e.target.value)}
+                    />
+                    <Input
+                      label="تاريخ الضم"
+                      type="date"
+                      value={joiningDate}
+                      onChange={(e) => setJoiningDate(e.target.value)}
+                    />
+                    <Input
+                      label="تاريخ ترقى للدرجه الحاليه"
+                      type="date"
+                      value={promotionCurrentGradeDate}
+                      onChange={(e) => setPromotionCurrentGradeDate(e.target.value)}
+                    />
+                    <Input
+                      label="تاريخ ترقى للدرجه الاعلى"
+                      type="date"
+                      value={promotionHigherGradeDate}
+                      onChange={(e) => setPromotionHigherGradeDate(e.target.value)}
+                    />
+                    <Input
+                      label="اخر عوده"
+                      type="date"
+                      value={lastLeaveReturnDate}
+                      onChange={(e) => setLastLeaveReturnDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )
+            }
+            return (
+              <div>
+                <h4 className="text-sm font-bold text-military-accent uppercase tracking-wider border-b border-white/5 pb-2 mb-4 text-start">
+                  بيانات عسكرية (مجند - حربية)
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input
+                    label="تاريخ التجنيد"
+                    type="date"
+                    value={enlistmentDate}
+                    onChange={(e) => setEnlistmentDate(e.target.value)}
+                  />
+                  <Input
+                    label="تاريخ التسريح"
+                    type="date"
+                    value={dischargeDate}
+                    onChange={(e) => setDischargeDate(e.target.value)}
+                  />
+                  <Input
+                    label="تاريخ الضم"
+                    type="date"
+                    value={joiningDate}
+                    onChange={(e) => setJoiningDate(e.target.value)}
+                  />
+                  <Input
+                    label="السلاح"
+                    value={weapon}
+                    onChange={(e) => setWeapon(e.target.value)}
+                    placeholder="مثال: مشاة"
+                  />
+                  <Input
+                    label="تاريخ اخر عوده من اجازه"
+                    type="date"
+                    value={lastLeaveReturnDate}
+                    onChange={(e) => setLastLeaveReturnDate(e.target.value)}
+                  />
+                  <Input
+                    label="عدد الجذات"
+                    type="number"
+                    min={0}
+                    value={guardCount}
+                    onChange={(e) => setGuardCount(e.target.value)}
+                    placeholder="0"
+                  />
+                  <Select
+                    label="التمام"
+                    options={statusOptions}
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                  />
+                </div>
+              </div>
+            )
+          })()}
+
+        {personnelType === 'داخلية' && (
+          <div>
+            <h4 className="text-sm font-bold text-military-accent uppercase tracking-wider border-b border-white/5 pb-2 mb-4 text-start">
+              بيانات داخلية
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Input
+                label="رقم الشرطة"
+                value={policeNumber}
+                onChange={(e) => setPoliceNumber(e.target.value)}
+                placeholder="رقم الشرطة"
+              />
+              <Input
+                label="تاريخ التجنيد"
+                type="date"
+                value={enlistmentDate}
+                onChange={(e) => setEnlistmentDate(e.target.value)}
+              />
+              <Input
+                label="تاريخ الرديف"
+                type="date"
+                value={reserveDate}
+                onChange={(e) => setReserveDate(e.target.value)}
+              />
+              <Input
+                label="الجذات الاداريه"
+                type="number"
+                min={0}
+                value={administrativeUnits}
+                onChange={(e) => setAdministrativeUnits(e.target.value)}
+                placeholder="0"
+              />
+              <Input
+                label="المحاكمات العسكرية"
+                value={militaryTrials}
+                onChange={(e) => setMilitaryTrials(e.target.value)}
+                placeholder="تفاصيل المحاكمات"
+              />
+              <Input
+                label="السريه التابع لها"
+                value={affiliatedUnit}
+                onChange={(e) => setAffiliatedUnit(e.target.value)}
+                placeholder="السرية"
+              />
+              <Input label="العرض" value={display} onChange={(e) => setDisplay(e.target.value)} />
+              <Input
+                label="الشطب"
+                value={strikeOff}
+                onChange={(e) => setStrikeOff(e.target.value)}
+              />
+              <Input
+                label="المصابين"
+                value={injured}
+                onChange={(e) => setInjured(e.target.value)}
+              />
+              <Input
+                label="العيادات"
+                value={clinics}
+                onChange={(e) => setClinics(e.target.value)}
+              />
+              <Input
+                label="الاجازات علي القمسيون الطبي"
+                value={medicalCommissionLeaves}
+                onChange={(e) => setMedicalCommissionLeaves(e.target.value)}
+              />
+              <Select
+                label="البمنع من السلاح"
+                options={WEAPON_BAN_OPTIONS}
+                value={weaponBan}
+                onChange={(e) => setWeaponBan(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Section 3: Contact & Emergency */}
         <div>

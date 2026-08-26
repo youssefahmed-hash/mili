@@ -26,7 +26,12 @@ export const ClinicDashboard: React.FC = () => {
     examinationType: 'كشف دوري',
     medicalStatus: 'لائق',
     notes: '',
-    examinationDate: ''
+    examinationDate: '',
+    clinicType: 'حربية',
+    carnetNumber: '',
+    specialty: '',
+    diagnosis: '',
+    treatment: ''
   })
 
   const fetchRecords = useCallback(async () => {
@@ -54,12 +59,20 @@ export const ClinicDashboard: React.FC = () => {
       setError('الرجاء اختيار الفرد المريض')
       return
     }
+    if (formData.clinicType === 'حربية' && !formData.carnetNumber.trim()) {
+      setError('رقم الكارنية مطلوب للأفراد الحربية')
+      return
+    }
     setSubmitting(true)
     setError(null)
     try {
       const payload = {
         ...formData,
-        examinationDate: formData.examinationDate || null
+        examinationDate: formData.examinationDate || null,
+        carnetNumber: formData.carnetNumber.trim() || null,
+        specialty: formData.specialty.trim() || null,
+        diagnosis: formData.diagnosis.trim() || null,
+        treatment: formData.treatment.trim() || null
       }
       const res = await createClinicRecord(payload)
       if (res.success) {
@@ -68,7 +81,12 @@ export const ClinicDashboard: React.FC = () => {
           examinationType: 'كشف دوري',
           medicalStatus: 'لائق',
           notes: '',
-          examinationDate: ''
+          examinationDate: '',
+          clinicType: 'حربية',
+          carnetNumber: '',
+          specialty: '',
+          diagnosis: '',
+          treatment: ''
         })
         setIsModalOpen(false)
         fetchRecords()
@@ -147,6 +165,23 @@ export const ClinicDashboard: React.FC = () => {
         )
       }
     },
+    {
+      key: 'clinicType',
+      label: 'النوع',
+      render: (row) => (
+        <Badge variant={row.clinicType === 'حربية' ? 'primary' : 'secondary'}>
+          {row.clinicType === 'حربية' ? 'حربية' : 'داخلية'}
+        </Badge>
+      )
+    },
+    {
+      key: 'carnetNumber',
+      label: 'رقم الكارنية',
+      render: (row) => row.carnetNumber || '—'
+    },
+    { key: 'specialty', label: 'التخصص', render: (row) => row.specialty || '—' },
+    { key: 'diagnosis', label: 'التشخيص', render: (row) => row.diagnosis || '—' },
+    { key: 'treatment', label: 'العلاج', render: (row) => row.treatment || '—' },
     { key: 'notes', label: 'الملاحظات الطبية' },
     {
       key: 'actions',
@@ -293,6 +328,42 @@ export const ClinicDashboard: React.FC = () => {
             value={formData.notes}
             onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
             placeholder="اكتب الملاحظات..."
+          />
+          <Select
+            label="نوع الفرد"
+            options={[
+              { value: 'حربية', label: 'حربية' },
+              { value: 'داخلية', label: 'داخلية' }
+            ]}
+            value={formData.clinicType}
+            onChange={(e) => setFormData((p) => ({ ...p, clinicType: e.target.value }))}
+          />
+          {formData.clinicType === 'حربية' && (
+            <Input
+              label="رقم الكارنية"
+              value={formData.carnetNumber}
+              onChange={(e) => setFormData((p) => ({ ...p, carnetNumber: e.target.value }))}
+              placeholder="رقم الكارنية"
+              required
+            />
+          )}
+          <Input
+            label="التخصص"
+            value={formData.specialty}
+            onChange={(e) => setFormData((p) => ({ ...p, specialty: e.target.value }))}
+            placeholder="التخصص الطبي"
+          />
+          <Input
+            label="التشخيص"
+            value={formData.diagnosis}
+            onChange={(e) => setFormData((p) => ({ ...p, diagnosis: e.target.value }))}
+            placeholder="التشخيص الطبي"
+          />
+          <Input
+            label="العلاج"
+            value={formData.treatment}
+            onChange={(e) => setFormData((p) => ({ ...p, treatment: e.target.value }))}
+            placeholder="خطة العلاج"
           />
         </div>
       </Modal>

@@ -1,5 +1,5 @@
 import { AppDataSource } from "../../config/data-source";
-import { Personnel, PersonnelCategory, PersonnelStatus } from "../../entities/Personnel";
+import { Personnel, PersonnelCategory } from "../../entities/Personnel";
 import { Like, Equal } from "typeorm";
 import fs from "fs";
 import path from "path";
@@ -37,7 +37,7 @@ export class PersonnelService {
         ranks?: string;
         rank?: string;
         unit?: string;
-        status?: PersonnelStatus;
+        status?: string;
         page?: number;
         limit?: number;
     }) {
@@ -162,6 +162,61 @@ export class PersonnelService {
         } catch (err) {
             console.error(`Error deleting local file ${fileUrl}:`, err);
         }
+    }
+
+    async getVacationLineup(dateStr?: string) {
+        const today = dateStr ? new Date(dateStr) : new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const all = await this.repository.find();
+        const goingDown: Record<string, unknown>[] = [];
+        const comingUp: Record<string, unknown>[] = [];
+        const onVacation: Record<string, unknown>[] = [];
+
+        for (const p of all) {
+            if (!p.vacationCycle || !p.vacationAnchor) continue;
+            const cycle = parseInt(p.vacationCycle, 10);
+            if (![14, 28].includes(cycle)) continue;
+
+            const anchor = new Date(p.vacationAnchor);
+            anchor.setHours(0, 0, 0, 0);
+            if (anchor > today) continue;
+
+            const diffDays = Math.floor((today.getTime() - anchor.getTime()) / 86400000);
+            const k = Math.floor(diffDays / cycle);
+            const descent = new Date(anchor);
+            descent.setDate(descent.getDate() + k * cycle);
+            const ret = new Date(descent);
+            ret.setDate(ret.getDate() + 14);
+
+            const info = {
+                id: p.id,
+                fullName: p.fullName,
+                rank: p.rank,
+                militaryId: p.militaryId,
+                unit: p.unit,
+                cycle: p.vacationCycle,
+                nextDescent: descent.toISOString().slice(0, 10),
+                nextReturn: ret.toISOString().slice(0, 10)
+            };
+
+            if (today.getTime() === descent.getTime()) {
+                goingDown.push(info);
+            } else if (today.getTime() === ret.getTime()) {
+                comingUp.push(info);
+            }
+
+            if (today.getTime() > descent.getTime() && today.getTime() < ret.getTime()) {
+                onVacation.push(info);
+            }
+        }
+
+        return {
+            date: today.toISOString().slice(0, 10),
+            goingDown,
+            comingUp,
+            onVacation
+        };
     }
 }
 export const personnelService = new PersonnelService();
