@@ -25,7 +25,7 @@ export const Settings: React.FC = () => {
   const updateUserStore = useAuthStore((s) => s.updateUser)
 
   const [fullName, setFullName] = useState(user?.fullName || '')
-  const [department, setDepartment] = useState(user?.department || '')
+  const [department] = useState(user?.department || '')
   const [profileSaving, setProfileSaving] = useState(false)
   const [profileMsg, setProfileMsg] = useState<{ ok: boolean; text: string } | null>(null)
 
@@ -51,7 +51,7 @@ export const Settings: React.FC = () => {
     setProfileSaving(true)
     setProfileMsg(null)
     try {
-      const res = await updateProfile({ fullName, department })
+      const res = await updateProfile({ fullName })
       if (res.success) {
         updateUserStore(res.data)
         setProfileMsg({ ok: true, text: 'تم حفظ الملف الشخصي بنجاح' })
@@ -152,12 +152,10 @@ export const Settings: React.FC = () => {
             </div>
 
             <div className='flex flex-col gap-2'>
-              <span className='text-xs text-gray-400'>القسم / الإدارة</span>
-              <Input
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                placeholder='القسم'
-              />
+              <span className='text-xs text-gray-400'>القسم (يحدده مدير النظام فقط)</span>
+              <div className='w-full bg-military-900/60 border border-white/10 text-gray-200 text-sm rounded-lg px-3 py-2.5'>
+                {department || '—'}
+              </div>
             </div>
 
             {msgBox(profileMsg)}

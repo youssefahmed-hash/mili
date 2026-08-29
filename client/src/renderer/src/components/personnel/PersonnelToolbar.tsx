@@ -3,6 +3,7 @@ import { UserPlus, FilterX } from 'lucide-react'
 import { usePersonnelStore } from '../../store/personnelStore'
 import { Select } from '../ui/Select'
 import { Button } from '../ui/Button'
+import { getUserSectionOptions } from '../../constants/departments'
 
 interface PersonnelToolbarProps {
   onAddClick: () => void
@@ -29,20 +30,15 @@ export const PersonnelToolbar: React.FC<PersonnelToolbarProps> = ({ onAddClick }
   ]
 
   const unitOptions = [
-    { value: '', label: 'كل الوحدات' },
-    { value: 'الكتيبة الأولى', label: 'الكتيبة الأولى' },
-    { value: 'الكتيبة الثانية', label: 'الكتيبة الثانية' },
-    { value: 'الكتيبة الثالثة', label: 'الكتيبة الثالثة' },
-    { value: 'اللواء الرابع عشر', label: 'اللواء الرابع عشر' },
-    { value: 'قيادة المنطقة الشرقية', label: 'قيادة المنطقة الشرقية' },
-    { value: 'مقر القيادة العامة', label: 'مقر القيادة العامة' }
+    { value: '', label: 'كل الأقسام' },
+    ...getUserSectionOptions().map((o) => ({ value: o.value, label: o.label }))
   ]
 
   const handleFilterChange = (key: string, value: string): void => {
     setFilters({ [key]: value || undefined })
   }
 
-  const hasActiveFilters = Object.values(filters).some((v) => v !== undefined)
+  const hasActiveFilters = Boolean(filters.status || filters.unit)
 
   return (
     <div className="glassmorphism p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { ClipboardList, Clock, MapPin, Building2, Radio } from 'lucide-react'
 import { getServicesLineup } from '../../api/services.api'
+import { useAppStore } from '../../store/appStore'
 import type { ServicesLineup as Lineup, ServicesLineupItem } from '../../types/personnel'
 import { useAuthStore } from '../../store/authStore'
 import { Input } from '../ui/Input'
@@ -43,7 +44,7 @@ const RosterTable: React.FC<{ rows: ServicesLineupItem[]; isToday: boolean }> = 
         </div>
       )
     },
-    { key: 'unit', label: 'الوحدة' },
+    { key: 'unit', label: 'القسم' },
     {
       key: 'time',
       label: 'من - إلى',
@@ -129,6 +130,13 @@ export const ServicesLineup: React.FC = () => {
 
   const isToday = date === todayStr()
 
+  const { searchQuery } = useAppStore()
+  const q = (searchQuery || '').trim().toLowerCase()
+  const matchS = (p: ServicesLineupItem): boolean =>
+    !q || p.fullName.toLowerCase().includes(q) || p.militaryId.toLowerCase().includes(q)
+  const militaryRows = lineup ? lineup.military.filter(matchS) : []
+  const internalRows = lineup ? lineup.internal.filter(matchS) : []
+
   const section = (
     title: string,
     rows: ServicesLineupItem[],
@@ -183,8 +191,8 @@ export const ServicesLineup: React.FC = () => {
 
       {lineup && (
         <div className="grid grid-cols-1 gap-6 w-full">
-          {showMilitary && section('خدمات الحربية', lineup.military, 'text-amber-400')}
-          {showInternal && section('خدمات الداخلية', lineup.internal, 'text-sky-400')}
+          {showMilitary && section('خدمات الحربية', militaryRows, 'text-amber-400')}
+          {showInternal && section('خدمات الداخلية', internalRows, 'text-sky-400')}
         </div>
       )}
 

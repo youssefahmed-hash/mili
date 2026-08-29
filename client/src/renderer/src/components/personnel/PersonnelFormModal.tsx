@@ -8,7 +8,7 @@ import { Upload } from 'lucide-react'
 import type { Personnel } from '../../types/personnel'
 import { resolveFileUrl, isPdf } from '../../utils/fileUrl'
 import { getRankCategory } from '../../constants/categories'
-import { getDepartmentOptions } from '../../constants/departments'
+import { getUserSectionOptions } from '../../constants/departments'
 import {
   PERSONNEL_TYPE_OPTIONS,
   TAMAM_OPTIONS,
@@ -26,16 +26,23 @@ interface PersonnelFormModalProps {
   isOpen: boolean
   onClose: () => void
   target?: Personnel | null // If target exists, we are editing
+  mode?: 'create' | 'edit' | 'complete'
 }
 
 export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
   isOpen,
   onClose,
-  target
+  target,
+  mode = 'create'
 }) => {
   const { addPersonnel, editPersonnel, fetchPersonnelList, error: storeError } = usePersonnelStore()
   const { user: authUser } = useAuthStore()
   const isEdit = !!target
+  const isComplete = mode === 'complete'
+
+  // في وضع استكمال البيانات: الحقل يقفل (read-only) لو كان له قيمة أصلاً في السجل
+  const compLock = (field: string): boolean =>
+    isComplete && !!target && !!(target as unknown as Record<string, unknown>)[field]
 
   // Local form states
   const [fullName, setFullName] = useState('')
@@ -55,7 +62,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
   const [motherWork, setMotherWork] = useState('')
   const [motherPhone, setMotherPhone] = useState('')
   const [unit, setUnit] = useState(
-    () => getDepartmentOptions(authUser?.userType === 'داخلية' ? 'داخلية' : 'حربية')[0]?.value || ''
+    () => getUserSectionOptions(authUser?.userType === 'داخلية' ? 'داخلية' : 'حربية')[0]?.value || ''
   )
   const [specialization, setSpecialization] = useState('')
   const [appointmentDate, setAppointmentDate] = useState('')
@@ -148,7 +155,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
       setMotherHealthStatus(target.motherHealthStatus || 'حي')
       setMotherWork(target.motherWork || '')
       setMotherPhone(target.motherPhone || '')
-      setUnit(target.unit || 'الكتيبة الأولى')
+      setUnit(target.unit || 'أفراد')
       setSpecialization(target.specialization || '')
       setPersonnelType(target.personnelType || 'حربية')
       setEnlistmentDate(target.enlistmentDate ? target.enlistmentDate.split('T')[0] : '')
@@ -235,7 +242,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
       errs.nationalId = 'الرقم القومي يجب أن يتكون من 14 رقماً'
     }
     if (!birthDate) errs.birthDate = 'تاريخ الميلاد مطلوب'
-    if (!unit.trim()) errs.unit = 'قسم / نقطه مطلوب'
+    if (!unit.trim()) errs.unit = 'القسم مطلوب'
 
     setErrors(errs)
     return Object.keys(errs).length === 0
@@ -326,6 +333,81 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
       }
     })
 
+    // استكمال بيانات: لا نسمح بتعديل الحقول المملوءة مسبقاً — نرسل فقط الحقول التي كانت فارغة وأضافها المستخدم
+    if (isComplete && target) {
+      const origValues = target as unknown as Record<string, unknown>
+      const KEEP = ['category']
+      const ALL_KEYS = [
+        'fullName',
+        'category',
+        'rank',
+        'militaryId',
+        'nationalId',
+        'birthDate',
+        'birthPlace',
+        'residencePlace',
+        'maritalStatus',
+        'familyMembersCount',
+        'parentsLivingSeparately',
+        'fatherHealthStatus',
+        'fatherWork',
+        'fatherPhone',
+        'motherHealthStatus',
+        'motherWork',
+        'motherPhone',
+        'unit',
+        'personnelType',
+        'enlistmentDate',
+        'dischargeDate',
+        'joiningDate',
+        'weapon',
+        'lastLeaveReturnDate',
+        'guardCount',
+        'seniorityNumber',
+        'grade',
+        'promotionCurrentRankDate',
+        'promotionCurrentGradeDate',
+        'promotionHigherRankDate',
+        'promotionHigherGradeDate',
+        'policeNumber',
+        'reserveDate',
+        'administrativeUnits',
+        'militaryTrials',
+        'affiliatedUnit',
+        'display',
+        'strikeOff',
+        'injured',
+        'clinics',
+        'medicalCommissionLeaves',
+        'weaponBan',
+        'specialization',
+        'appointmentDate',
+        'serviceStartDate',
+        'batchDate',
+        'status',
+        'education',
+        'phone',
+        'email',
+        'address',
+        'emergencyContact',
+        'emergencyPhone',
+        'notes',
+        'workBeforeEnlistment',
+        'behaviorInUnit',
+        'subordinates',
+        'supervisor'
+      ]
+      for (const key of ALL_KEYS) {
+        if (KEEP.includes(key)) continue
+        const orig = origValues[key]
+        if (orig !== '' && orig != null) formData.delete(key)
+      }
+      if (origValues.photo) formData.delete('photo')
+      ATTACHMENTS.forEach(({ key }) => {
+        if (origValues[key]) formData.delete(key)
+      })
+    }
+
     let success = false
     if (isEdit && target) {
       success = await editPersonnel(target.id, formData)
@@ -376,7 +458,13 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
     { value: 'منفصلين', label: 'منفصلين (سكن مختلف)' }
   ]
 
-  const unitOptions = getDepartmentOptions(authUser?.userType === 'داخلية' ? 'داخلية' : 'حربية')
+  const baseUnitOptions = getUserSectionOptions(
+    authUser?.userType === 'داخلية' ? 'داخلية' : 'حربية'
+  )
+  const unitOptions =
+    unit && !baseUnitOptions.some((o) => o.value === unit)
+      ? [{ value: unit, label: unit }, ...baseUnitOptions]
+      : baseUnitOptions
 
   const performanceOptions = [
     { value: 'ممتاز', label: 'ممتاز' },
@@ -391,8 +479,12 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
       <Button variant="secondary" onClick={onClose} disabled={loading}>
         إلغاء
       </Button>
-      <Button variant={isEdit ? 'accent' : 'primary'} onClick={handleSubmit} loading={loading}>
-        {isEdit ? 'حفظ التغييرات' : 'تسجيل الفرد'}
+      <Button
+        variant={isEdit || isComplete ? 'accent' : 'primary'}
+        onClick={handleSubmit}
+        loading={loading}
+      >
+        {isComplete ? 'حفظ البيانات المضافة' : isEdit ? 'حفظ التغييرات' : 'تسجيل الفرد'}
       </Button>
     </>
   )
@@ -401,7 +493,13 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEdit ? 'تعديل ملف الفرد العسكري' : 'تسجيل فرد عسكري جديد'}
+      title={
+        isComplete
+          ? 'استكمال بيانات الفرد (إضافة فقط)'
+          : isEdit
+            ? 'تعديل ملف الفرد العسكري'
+            : 'تسجيل فرد عسكري جديد'
+      }
       footer={modalFooter}
       size="2xl"
     >
@@ -409,6 +507,13 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
         {storeError && (
           <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm text-start font-bold">
             {storeError}
+          </div>
+        )}
+
+        {isComplete && (
+          <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 p-3 rounded-lg text-sm text-start font-bold">
+            وضع استكمال البيانات: الحقول المملوءة مغلقة ولا يمكن تعديلها — يمكنك إضافة الحقول
+            الفارغة فقط، ولن يتم حفظ أي تعديل على بيانات موجودة.
           </div>
         )}
 
@@ -433,6 +538,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                   onChange={handlePhotoChange}
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   title="اختر صورة شخصية"
+                  disabled={isComplete && !!(target as unknown as Record<string, unknown>).photo}
                 />
               </div>
               <span className="text-[10px] text-gray-500">مسموح بصور JPG / PNG فقط</span>
@@ -446,6 +552,8 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                 onChange={(e) => setFullName(e.target.value)}
                 error={errors.fullName}
                 placeholder="مثال: أحمد محمد علي حسن"
+
+                disabled={compLock('fullName')}
               />
               <Input
                 label="الرقم القومي (14 رقماً) *"
@@ -454,6 +562,8 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                 error={errors.nationalId}
                 placeholder="2950101XXXXXXXX"
                 maxLength={14}
+
+                disabled={compLock('nationalId')}
               />
               <Input
                 label="تاريخ الميلاد *"
@@ -461,18 +571,24 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
                 error={errors.birthDate}
+
+                disabled={compLock('birthDate')}
               />
               <Input
                 label="محل الميلاد"
                 value={birthPlace}
                 onChange={(e) => setBirthPlace(e.target.value)}
                 placeholder="المحافظة / المدينة"
+
+                disabled={compLock('birthPlace')}
               />
               <Input
                 label="محل الإقامة"
                 value={residencePlace}
                 onChange={(e) => setResidencePlace(e.target.value)}
                 placeholder="المحافظة / المدينة / العنوان"
+
+                disabled={compLock('residencePlace')}
               />
             </div>
           </div>
@@ -509,6 +625,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                       onChange={handleAttachment(key)}
                       className="absolute inset-0 opacity-0 cursor-pointer"
                       title={label}
+                      disabled={isComplete && !!(target as unknown as Record<string, unknown>)[key]}
                     />
                   </div>
                   <span className="text-[10px] text-gray-500">{hint}</span>
@@ -529,6 +646,8 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               options={maritalOptions}
               value={maritalStatus}
               onChange={(e) => setMaritalStatus(e.target.value)}
+
+              disabled={compLock('maritalStatus')}
             />
             <Input
               label="عدد أفراد الأسرة (الحالة المدنية)"
@@ -537,12 +656,16 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               value={familyMembersCount}
               onChange={(e) => setFamilyMembersCount(e.target.value)}
               placeholder="مثال: 5"
+
+              disabled={compLock('familyMembersCount')}
             />
             <Select
               label="سكن الوالد والوالدة"
               options={parentsLivingOptions}
               value={parentsLivingSeparately}
               onChange={(e) => setParentsLivingSeparately(e.target.value)}
+
+              disabled={compLock('parentsLivingSeparately')}
             />
           </div>
 
@@ -557,20 +680,22 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                 options={healthOptions}
                 value={fatherHealthStatus}
                 onChange={(e) => setFatherHealthStatus(e.target.value)}
+
+                disabled={compLock('fatherHealthStatus')}
               />
               <Input
                 label="العمل"
                 value={fatherWork}
                 onChange={(e) => setFatherWork(e.target.value)}
                 placeholder="مثال: متقاعد / موظف"
-                disabled={fatherHealthStatus === 'متوفي'}
+                disabled={fatherHealthStatus === 'متوفي' || compLock('fatherWork')}
               />
               <Input
                 label="رقم الهاتف"
                 value={fatherPhone}
                 onChange={(e) => setFatherPhone(e.target.value)}
                 placeholder="01XXXXXXXXX"
-                disabled={fatherHealthStatus === 'متوفي'}
+                disabled={fatherHealthStatus === 'متوفي' || compLock('fatherPhone')}
               />
             </div>
 
@@ -584,20 +709,22 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                 options={healthOptions}
                 value={motherHealthStatus}
                 onChange={(e) => setMotherHealthStatus(e.target.value)}
+
+                disabled={compLock('motherHealthStatus')}
               />
               <Input
                 label="العمل"
                 value={motherWork}
                 onChange={(e) => setMotherWork(e.target.value)}
                 placeholder="مثال: ربة منزل"
-                disabled={motherHealthStatus === 'متوفي'}
+                disabled={motherHealthStatus === 'متوفي' || compLock('motherWork')}
               />
               <Input
                 label="رقم الهاتف"
                 value={motherPhone}
                 onChange={(e) => setMotherPhone(e.target.value)}
                 placeholder="01XXXXXXXXX"
-                disabled={motherHealthStatus === 'متوفي'}
+                disabled={motherHealthStatus === 'متوفي' || compLock('motherPhone')}
               />
             </div>
           </div>
@@ -608,6 +735,8 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
             onChange={(e) => setWorkBeforeEnlistment(e.target.value)}
             placeholder="مثال: مدرس / فني / طالب"
             className="mt-4"
+
+            disabled={compLock('workBeforeEnlistment')}
           />
         </div>
 
@@ -622,6 +751,8 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               options={rankOptions}
               value={rank}
               onChange={(e) => setRank(e.target.value)}
+
+              disabled={compLock('rank')}
             />
             <Input
               label="الرقم العسكري *"
@@ -629,78 +760,104 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               onChange={(e) => setMilitaryId(e.target.value)}
               error={errors.militaryId}
               placeholder="مثال: 202611099"
+
+              disabled={compLock('militaryId')}
             />
             <Select
-              label="قسم - نقطه"
+              label="القسم"
               options={unitOptions}
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
+
+              disabled={compLock('unit')}
             />
             <Select
               label="حربية / داخلية"
               options={PERSONNEL_TYPE_OPTIONS}
               value={personnelType}
               onChange={(e) => setPersonnelType(e.target.value as 'حربية' | 'داخلية')}
+
+              disabled={compLock('personnelType')}
             />
             <Input
               label="التخصص"
               value={specialization}
               onChange={(e) => setSpecialization(e.target.value)}
               placeholder="مثال: كاتب إلكتروني"
+
+              disabled={compLock('specialization')}
             />
             <Input
               label="تاريخ التعيين"
               type="date"
               value={appointmentDate}
               onChange={(e) => setAppointmentDate(e.target.value)}
+
+              disabled={compLock('appointmentDate')}
             />
             <Input
               label="تاريخ بدء الخدمة الفعلية"
               type="date"
               value={serviceStartDate}
               onChange={(e) => setServiceStartDate(e.target.value)}
+
+              disabled={compLock('serviceStartDate')}
             />
             <Select
               label="تقييم الأداء الأخير"
               options={performanceOptions}
               value={performanceRating}
               onChange={(e) => setPerformanceRating(e.target.value)}
+
+              disabled={compLock('performanceRating')}
             />
             <Input
               label="تاريخ آخر ترقية"
               type="date"
               value={lastPromotionDate}
               onChange={(e) => setLastPromotionDate(e.target.value)}
+
+              disabled={compLock('lastPromotionDate')}
             />
             <Input
               label="تاريخ الترقية المستحقة"
               type="date"
               value={nextPromotionDate}
               onChange={(e) => setNextPromotionDate(e.target.value)}
+
+              disabled={compLock('nextPromotionDate')}
             />
             <Input
               label="الدفعة"
               type="date"
               value={batchDate}
               onChange={(e) => setBatchDate(e.target.value)}
+
+              disabled={compLock('batchDate')}
             />
             <Select
               label="تقييم السلوك داخل الوحدة"
               options={performanceOptions}
               value={behaviorInUnit}
               onChange={(e) => setBehaviorInUnit(e.target.value)}
+
+              disabled={compLock('behaviorInUnit')}
             />
             <Select
               label="تقييم السلوك من المرؤوسين"
               options={performanceOptions}
               value={subordinates}
               onChange={(e) => setSubordinates(e.target.value)}
+
+              disabled={compLock('subordinates')}
             />
             <Select
               label="تقييم السلوك من الرئيس"
               options={performanceOptions}
               value={supervisor}
               onChange={(e) => setSupervisor(e.target.value)}
+
+              disabled={compLock('supervisor')}
             />
           </div>
         </div>
@@ -720,42 +877,56 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                       value={seniorityNumber}
                       onChange={(e) => setSeniorityNumber(e.target.value)}
                       placeholder="رقم الاقدمية"
+
+                      disabled={compLock('seniorityNumber')}
                     />
                     <Input
                       label="السلاح"
                       value={weapon}
                       onChange={(e) => setWeapon(e.target.value)}
                       placeholder="مثال: مشاة"
+
+                      disabled={compLock('weapon')}
                     />
                     <Input
                       label="تاريخ التجنيد"
                       type="date"
                       value={enlistmentDate}
                       onChange={(e) => setEnlistmentDate(e.target.value)}
+
+                      disabled={compLock('enlistmentDate')}
                     />
                     <Input
                       label="تاريخ الضم"
                       type="date"
                       value={joiningDate}
                       onChange={(e) => setJoiningDate(e.target.value)}
+
+                      disabled={compLock('joiningDate')}
                     />
                     <Input
                       label="تاريخ ترقى للرتبه الحاليه"
                       type="date"
                       value={promotionCurrentRankDate}
                       onChange={(e) => setPromotionCurrentRankDate(e.target.value)}
+
+                      disabled={compLock('promotionCurrentRankDate')}
                     />
                     <Input
                       label="تاريخ ترقى للرتبه الاعلى"
                       type="date"
                       value={promotionHigherRankDate}
                       onChange={(e) => setPromotionHigherRankDate(e.target.value)}
+
+                      disabled={compLock('promotionHigherRankDate')}
                     />
                     <Input
                       label="اخر عوده"
                       type="date"
                       value={lastLeaveReturnDate}
                       onChange={(e) => setLastLeaveReturnDate(e.target.value)}
+
+                      disabled={compLock('lastLeaveReturnDate')}
                     />
                   </div>
                 </div>
@@ -773,48 +944,64 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                       value={grade}
                       onChange={(e) => setGrade(e.target.value)}
                       placeholder="مثال: رقيب أول"
+
+                      disabled={compLock('grade')}
                     />
                     <Input
                       label="رقم اقدميه"
                       value={seniorityNumber}
                       onChange={(e) => setSeniorityNumber(e.target.value)}
                       placeholder="رقم الاقدمية"
+
+                      disabled={compLock('seniorityNumber')}
                     />
                     <Input
                       label="السلاح"
                       value={weapon}
                       onChange={(e) => setWeapon(e.target.value)}
                       placeholder="مثال: مشاة"
+
+                      disabled={compLock('weapon')}
                     />
                     <Input
                       label="تاريخ التجنيد"
                       type="date"
                       value={enlistmentDate}
                       onChange={(e) => setEnlistmentDate(e.target.value)}
+
+                      disabled={compLock('enlistmentDate')}
                     />
                     <Input
                       label="تاريخ الضم"
                       type="date"
                       value={joiningDate}
                       onChange={(e) => setJoiningDate(e.target.value)}
+
+                      disabled={compLock('joiningDate')}
                     />
                     <Input
                       label="تاريخ ترقى للدرجه الحاليه"
                       type="date"
                       value={promotionCurrentGradeDate}
                       onChange={(e) => setPromotionCurrentGradeDate(e.target.value)}
+
+                      disabled={compLock('promotionCurrentGradeDate')}
                     />
                     <Input
                       label="تاريخ ترقى للدرجه الاعلى"
                       type="date"
                       value={promotionHigherGradeDate}
                       onChange={(e) => setPromotionHigherGradeDate(e.target.value)}
+
+                      disabled={compLock('promotionHigherGradeDate')}
                     />
                     <Input
                       label="اخر عوده"
                       type="date"
                       value={lastLeaveReturnDate}
                       onChange={(e) => setLastLeaveReturnDate(e.target.value)}
+
+                      disabled={compLock('lastLeaveReturnDate')}
                     />
                   </div>
                 </div>
@@ -831,30 +1018,40 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                     type="date"
                     value={enlistmentDate}
                     onChange={(e) => setEnlistmentDate(e.target.value)}
+
+                    disabled={compLock('enlistmentDate')}
                   />
                   <Input
                     label="تاريخ التسريح"
                     type="date"
                     value={dischargeDate}
                     onChange={(e) => setDischargeDate(e.target.value)}
+
+                    disabled={compLock('dischargeDate')}
                   />
                   <Input
                     label="تاريخ الضم"
                     type="date"
                     value={joiningDate}
                     onChange={(e) => setJoiningDate(e.target.value)}
+
+                    disabled={compLock('joiningDate')}
                   />
                   <Input
                     label="السلاح"
                     value={weapon}
                     onChange={(e) => setWeapon(e.target.value)}
                     placeholder="مثال: مشاة"
+
+                    disabled={compLock('weapon')}
                   />
                   <Input
                     label="تاريخ اخر عوده من اجازه"
                     type="date"
                     value={lastLeaveReturnDate}
                     onChange={(e) => setLastLeaveReturnDate(e.target.value)}
+
+                    disabled={compLock('lastLeaveReturnDate')}
                   />
                   <Input
                     label="عدد الجذات"
@@ -863,12 +1060,16 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                     value={guardCount}
                     onChange={(e) => setGuardCount(e.target.value)}
                     placeholder="0"
+
+                    disabled={compLock('guardCount')}
                   />
                   <Select
                     label="التمام"
                     options={statusOptions}
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
+
+                    disabled={compLock('status')}
                   />
                 </div>
               </div>
@@ -886,18 +1087,24 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                 value={policeNumber}
                 onChange={(e) => setPoliceNumber(e.target.value)}
                 placeholder="رقم الشرطة"
+
+                disabled={compLock('policeNumber')}
               />
               <Input
                 label="تاريخ التجنيد"
                 type="date"
                 value={enlistmentDate}
                 onChange={(e) => setEnlistmentDate(e.target.value)}
+
+                disabled={compLock('enlistmentDate')}
               />
               <Input
                 label="تاريخ الرديف"
                 type="date"
                 value={reserveDate}
                 onChange={(e) => setReserveDate(e.target.value)}
+
+                disabled={compLock('reserveDate')}
               />
               <Input
                 label="الجذات الاداريه"
@@ -906,45 +1113,66 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                 value={administrativeUnits}
                 onChange={(e) => setAdministrativeUnits(e.target.value)}
                 placeholder="0"
+
+                disabled={compLock('administrativeUnits')}
               />
               <Input
                 label="المحاكمات العسكرية"
                 value={militaryTrials}
                 onChange={(e) => setMilitaryTrials(e.target.value)}
                 placeholder="تفاصيل المحاكمات"
+
+                disabled={compLock('militaryTrials')}
               />
               <Input
                 label="السريه التابع لها"
                 value={affiliatedUnit}
                 onChange={(e) => setAffiliatedUnit(e.target.value)}
                 placeholder="السرية"
+
+                disabled={compLock('affiliatedUnit')}
               />
-              <Input label="العرض" value={display} onChange={(e) => setDisplay(e.target.value)} />
+              <Input
+                label="العرض"
+                value={display}
+                onChange={(e) => setDisplay(e.target.value)}
+                disabled={compLock('display')}
+              />
               <Input
                 label="الشطب"
                 value={strikeOff}
                 onChange={(e) => setStrikeOff(e.target.value)}
+
+                disabled={compLock('strikeOff')}
               />
               <Input
                 label="المصابين"
                 value={injured}
                 onChange={(e) => setInjured(e.target.value)}
+
+                disabled={compLock('injured')}
               />
               <Input
                 label="العيادات"
                 value={clinics}
                 onChange={(e) => setClinics(e.target.value)}
+
+                disabled={compLock('clinics')}
               />
               <Input
                 label="الاجازات علي القمسيون الطبي"
                 value={medicalCommissionLeaves}
                 onChange={(e) => setMedicalCommissionLeaves(e.target.value)}
+
+                disabled={compLock('medicalCommissionLeaves')}
               />
               <Select
                 label="البمنع من السلاح"
                 options={WEAPON_BAN_OPTIONS}
                 value={weaponBan}
                 onChange={(e) => setWeaponBan(e.target.value)}
+
+                disabled={compLock('weaponBan')}
               />
             </div>
           </div>
@@ -961,6 +1189,8 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="01XXXXXXXXX"
+
+              disabled={compLock('phone')}
             />
             <Input
               label="البريد الإلكتروني"
@@ -968,6 +1198,8 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@military.eg"
+
+              disabled={compLock('email')}
             />
             <Input
               label="العنوان بالكامل بالتفصيل"
@@ -975,18 +1207,24 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               onChange={(e) => setAddress(e.target.value)}
               placeholder="المحافظة، المركز، الشارع، رقم المنزل"
               className="md:col-span-2"
+
+              disabled={compLock('address')}
             />
             <Input
               label="شخص للاتصال به بالطوارئ (الاسم بالكامل وعلاقته)"
               value={emergencyContact}
               onChange={(e) => setEmergencyContact(e.target.value)}
               placeholder="مثال: محمد علي حسن (الأب)"
+
+              disabled={compLock('emergencyContact')}
             />
             <Input
               label="هاتف الاتصال في حالات الطوارئ"
               value={emergencyPhone}
               onChange={(e) => setEmergencyPhone(e.target.value)}
               placeholder="01XXXXXXXXX"
+
+              disabled={compLock('emergencyPhone')}
             />
             <Input
               label="المستوى التعليمي / الشهادات الحاصل عليها"
@@ -994,6 +1232,8 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
               onChange={(e) => setEducation(e.target.value)}
               placeholder="بكالوريوس / مؤهل متوسط / شهادة عليا"
               className="md:col-span-2"
+
+              disabled={compLock('education')}
             />
             <div className="md:col-span-2 flex flex-col gap-1 text-start">
               <label className="text-sm font-semibold text-gray-300">ملاحظات عامة</label>
@@ -1001,6 +1241,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
+                disabled={compLock('notes')}
                 className="w-full bg-military-900 border border-white/10 hover:border-white/20 focus:border-military-primary focus:ring-2 focus:ring-military-primary/20 text-gray-200 text-sm rounded-lg p-2.5 outline-none transition-colors"
                 placeholder="اكتب أي تفاصيل أو ملاحظات إضافية تتعلق بالفرد هنا..."
               />

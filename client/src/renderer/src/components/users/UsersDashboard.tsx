@@ -6,12 +6,14 @@ import { Select } from '../ui/Select'
 import { Button } from '../ui/Button'
 import { Plus, Trash2, Pencil } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
+import { useAppStore } from '../../store/appStore'
 import { listUsers, createUser, updateUser, deleteUser } from '../../api/auth.api'
-import { getDepartmentOptions } from '../../constants/departments'
+import { getUserSectionOptions, getUserDegreeOptions, USER_SECTIONS_BY_TYPE } from '../../constants/departments'
 import type { User, RegisterPayload } from '../../types/user'
 
 export const UsersDashboard: React.FC = () => {
   const currentUser = useAuthStore((s) => s.user)
+  const { searchQuery } = useAppStore()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -23,7 +25,8 @@ export const UsersDashboard: React.FC = () => {
     password: '',
     fullName: '',
     userType: 'حربية',
-    department: 'عمليات',
+    department: 'أفراد',
+    degree: 'جندي',
     role: 'user'
   })
   const [formError, setFormError] = useState<string | null>(null)
@@ -54,7 +57,8 @@ export const UsersDashboard: React.FC = () => {
       password: '',
       fullName: '',
       userType: 'حربية',
-      department: 'عمليات',
+      department: 'أفراد',
+      degree: 'جندي',
       role: 'user'
     })
     setFormError(null)
@@ -69,6 +73,7 @@ export const UsersDashboard: React.FC = () => {
       fullName: u.fullName,
       userType: u.userType,
       department: u.department,
+      degree: u.degree,
       role: u.role
     })
     setFormError(null)
@@ -94,6 +99,7 @@ export const UsersDashboard: React.FC = () => {
         fullName: form.fullName,
         userType: form.userType,
         department: form.department,
+        degree: form.degree,
         role: form.role
       }
       if (form.password) payload.password = form.password
@@ -128,7 +134,20 @@ export const UsersDashboard: React.FC = () => {
     }
   }
 
-  const deptOptions = getDepartmentOptions(form.userType || 'حربية')
+  const baseDeptOptions = getUserSectionOptions(form.userType)
+  const deptOptions =
+    form.department && !baseDeptOptions.some((o) => o.value === form.department)
+      ? [{ value: form.department, label: form.department }, ...baseDeptOptions]
+      : baseDeptOptions
+
+  const q = (searchQuery || '').trim().toLowerCase()
+  const visibleUsers = q
+    ? users.filter(
+        (u) =>
+          u.username.toLowerCase().includes(q) ||
+          (u.fullName || '').toLowerCase().includes(q)
+      )
+    : users
   const typeOptions = [
     { value: 'حربية', label: 'حربية' },
     { value: 'داخلية', label: 'داخلية' }
@@ -151,6 +170,11 @@ export const UsersDashboard: React.FC = () => {
       )
     },
     { key: 'department', label: 'القسم' },
+    {
+      key: 'degree',
+      label: 'الدرجة',
+      render: (row) => <span className="text-gray-300">{row.degree}</span>
+    },
     {
       key: 'role',
       label: 'الصلاحية',
@@ -220,7 +244,7 @@ export const UsersDashboard: React.FC = () => {
         </div>
       )}
 
-      <Table columns={columns} data={users} loading={loading} />
+      <Table columns={columns} data={visibleUsers} loading={loading} />
 
       <Modal
         isOpen={modalOpen}
@@ -261,19 +285,26 @@ export const UsersDashboard: React.FC = () => {
               label="النوع"
               options={typeOptions}
               value={form.userType}
-              onChange={(e) =>
+              onChange={(e) => {
+                const t = e.target.value as 'داخلية' | 'حربية'
                 setForm({
                   ...form,
-                  userType: e.target.value as 'داخلية' | 'حربية',
-                  department: getDepartmentOptions(e.target.value as 'داخلية' | 'حربية')[0].value
+                  userType: t,
+                  department: USER_SECTIONS_BY_TYPE[t][0]
                 })
-              }
+              }}
             />
             <Select
               label="القسم"
               options={deptOptions}
               value={form.department}
               onChange={(e) => setForm({ ...form, department: e.target.value })}
+            />
+            <Select
+              label="الدرجة"
+              options={getUserDegreeOptions()}
+              value={form.degree}
+              onChange={(e) => setForm({ ...form, degree: e.target.value as 'جندي' | 'صف ضابط' | 'ضابط' })}
             />
             <Select
               label="الصلاحية"

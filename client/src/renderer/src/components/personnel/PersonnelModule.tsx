@@ -29,6 +29,7 @@ export const PersonnelModule: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('soldier')
 
+  const [formMode, setFormMode] = useState<'create' | 'edit' | 'complete'>('create')
   const [editTarget, setEditTarget] = useState<Personnel | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Personnel | null>(null)
   const [viewTargetId, setViewTargetId] = useState<string | null>(null)
@@ -46,11 +47,19 @@ export const PersonnelModule: React.FC = () => {
   }
 
   const handleAddClick = (): void => {
+    setFormMode('create')
     setEditTarget(null)
     setIsFormOpen(true)
   }
 
   const handleEditClick = (personnel: Personnel): void => {
+    setFormMode('edit')
+    setEditTarget(personnel)
+    setIsFormOpen(true)
+  }
+
+  const handleCompleteClick = (personnel: Personnel): void => {
+    setFormMode('complete')
     setEditTarget(personnel)
     setIsFormOpen(true)
   }
@@ -95,15 +104,17 @@ export const PersonnelModule: React.FC = () => {
         onPageChange={handlePageChange}
         onViewClick={handleViewClick}
         onEditClick={handleEditClick}
+        onCompleteClick={handleCompleteClick}
         onDeleteClick={handleDeleteClick}
       />
 
-      {/* Form Modal (Create / Edit) */}
+      {/* Form Modal (Create / Edit / Complete) */}
       {isFormOpen && (
         <PersonnelFormModal
           isOpen={isFormOpen}
           onClose={() => setIsFormOpen(false)}
           target={editTarget}
+          mode={formMode}
         />
       )}
 

@@ -43,6 +43,10 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "department", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', default: 'جندي' }),
+    __metadata("design:type", String)
+], User.prototype, "degree", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], User.prototype, "createdAt", void 0);

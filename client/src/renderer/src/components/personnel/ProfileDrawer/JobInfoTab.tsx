@@ -32,7 +32,7 @@ export const JobInfoTab: React.FC<JobInfoTabProps> = ({ data }) => {
     { label: 'الفئة العسكرية', value: categoryLabels[data.category] || data.category },
     { label: 'الرتبة الحالية', value: data.rank },
     { label: 'الرقم العسكري', value: data.militaryId },
-    { label: 'قسم - نقطه', value: data.unit },
+    { label: 'القسم', value: data.unit },
     { label: 'حربية / داخلية', value: data.personnelType },
     { label: 'التخصص', value: data.specialization || 'غير مسجل' },
     { label: 'تاريخ التعيين بالخدمة', value: formatDate(data.appointmentDate) },

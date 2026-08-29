@@ -4,15 +4,6 @@ exports.authController = exports.AuthController = void 0;
 const auth_service_1 = require("./auth.service");
 const apiResponse_1 = require("../../utils/apiResponse");
 class AuthController {
-    async register(req, res, next) {
-        try {
-            const user = await auth_service_1.authService.register(req.body);
-            return (0, apiResponse_1.successResponse)(res, user, 'تم إنشاء الحساب بنجاح', 201);
-        }
-        catch (err) {
-            next(err);
-        }
-    }
     async login(req, res, next) {
         try {
             const { username, password } = req.body;

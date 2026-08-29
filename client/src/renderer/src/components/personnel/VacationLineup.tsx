@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { CalendarClock, ArrowDownToLine, ArrowUpFromLine, Sun } from 'lucide-react'
 import { getVacationLineup } from '../../api/personnel.api'
+import { useAppStore } from '../../store/appStore'
 import type { VacationLineup as Lineup, VacationLineupPerson } from '../../types/personnel'
 import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
@@ -22,7 +23,7 @@ const personCard = (p: VacationLineupPerson): React.ReactElement => (
     <span className="text-xs text-gray-400">
       {p.rank} / {p.militaryId}
     </span>
-    <span className="text-xs text-gray-400">الوحدة: {p.unit || '—'}</span>
+    <span className="text-xs text-gray-400">القسم: {p.unit || '—'}</span>
     <span className="text-xs text-gray-500">
       نزول: {formatDate(p.nextDescent)} — عودة: {formatDate(p.nextReturn)}
     </span>
@@ -58,6 +59,15 @@ export const VacationLineup: React.FC = () => {
   }, [fetchLineup])
 
   const isToday = date === todayStr()
+
+  const { searchQuery } = useAppStore()
+  const q = (searchQuery || '').trim().toLowerCase()
+  const matchP = (p: VacationLineupPerson): boolean =>
+    !q || p.fullName.toLowerCase().includes(q) || p.militaryId.toLowerCase().includes(q)
+
+  const goingDown = lineup ? lineup.goingDown.filter(matchP) : []
+  const comingUp = lineup ? lineup.comingUp.filter(matchP) : []
+  const onVacation = lineup ? lineup.onVacation.filter(matchP) : []
 
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -95,13 +105,13 @@ export const VacationLineup: React.FC = () => {
           <section className="flex flex-col gap-3">
             <h3 className="flex items-center gap-2 text-lg font-bold text-emerald-400 border-b border-white/5 pb-2">
               <ArrowDownToLine className="h-5 w-5" /> النازل {isToday ? 'اليوم' : ''} (
-              {lineup.goingDown.length})
+              {goingDown.length})
             </h3>
             <div className="grid grid-cols-1 gap-3">
-              {lineup.goingDown.length === 0 ? (
+              {goingDown.length === 0 ? (
                 <p className="text-sm text-gray-500">لا يوجد أفراد نازلين في هذا التاريخ.</p>
               ) : (
-                lineup.goingDown.map((p) => <div key={p.id}>{personCard(p)}</div>)
+                goingDown.map((p) => <div key={p.id}>{personCard(p)}</div>)
               )}
             </div>
           </section>
@@ -109,26 +119,26 @@ export const VacationLineup: React.FC = () => {
           <section className="flex flex-col gap-3">
             <h3 className="flex items-center gap-2 text-lg font-bold text-amber-400 border-b border-white/5 pb-2">
               <ArrowUpFromLine className="h-5 w-5" /> الطالع {isToday ? 'اليوم' : ''} (
-              {lineup.comingUp.length})
+              {comingUp.length})
             </h3>
             <div className="grid grid-cols-1 gap-3">
-              {lineup.comingUp.length === 0 ? (
+              {comingUp.length === 0 ? (
                 <p className="text-sm text-gray-500">لا يوجد أفراد طالعين في هذا التاريخ.</p>
               ) : (
-                lineup.comingUp.map((p) => <div key={p.id}>{personCard(p)}</div>)
+                comingUp.map((p) => <div key={p.id}>{personCard(p)}</div>)
               )}
             </div>
           </section>
 
           <section className="flex flex-col gap-3">
             <h3 className="flex items-center gap-2 text-lg font-bold text-sky-400 border-b border-white/5 pb-2">
-              <Sun className="h-5 w-5" /> في إجازة حالياً ({lineup.onVacation.length})
+              <Sun className="h-5 w-5" /> في إجازة حالياً ({onVacation.length})
             </h3>
             <div className="grid grid-cols-1 gap-3">
-              {lineup.onVacation.length === 0 ? (
+              {onVacation.length === 0 ? (
                 <p className="text-sm text-gray-500">لا يوجد أفراد في إجازة في هذا التاريخ.</p>
               ) : (
-                lineup.onVacation.map((p) => <div key={p.id}>{personCard(p)}</div>)
+                onVacation.map((p) => <div key={p.id}>{personCard(p)}</div>)
               )}
             </div>
           </section>

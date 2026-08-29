@@ -4,7 +4,6 @@ import { requireAuth, requireAdmin } from './auth.middleware'
 
 const router = Router()
 
-router.post('/register', authController.register)
 router.post('/login', authController.login)
 router.get('/me', requireAuth, authController.me)
 router.put('/me', requireAuth, authController.updateProfile)

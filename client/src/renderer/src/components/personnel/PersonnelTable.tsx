@@ -1,5 +1,5 @@
 import React from 'react'
-import { Eye, Edit3, Trash2, ChevronRight, ChevronLeft } from 'lucide-react'
+import { Eye, Edit3, Trash2, FilePlus, ChevronRight, ChevronLeft } from 'lucide-react'
 import { Table, Column } from '../ui/Table'
 import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
@@ -17,6 +17,7 @@ interface PersonnelTableProps {
   onPageChange: (page: number) => void
   onViewClick: (row: Personnel) => void
   onEditClick: (row: Personnel) => void
+  onCompleteClick: (row: Personnel) => void
   onDeleteClick: (row: Personnel) => void
 }
 
@@ -27,6 +28,7 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
   onPageChange,
   onViewClick,
   onEditClick,
+  onCompleteClick,
   onDeleteClick
 }) => {
   const statusBadgeVariants: Record<string, 'success' | 'warning' | 'danger' | 'secondary'> = {
@@ -66,7 +68,7 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
     },
     { key: 'rank', label: 'الرتبة' },
     { key: 'militaryId', label: 'الرقم العسكري' },
-    { key: 'unit', label: 'قسم - نقطه' },
+    { key: 'unit', label: 'القسم' },
     {
       key: 'status',
       label: 'الحالة',
@@ -97,6 +99,15 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
             title="تعديل البيانات"
           >
             <Edit3 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-1.5 text-gray-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all"
+            onClick={() => onCompleteClick(row)}
+            title="استكمال بيانات (إضافة فقط)"
+          >
+            <FilePlus className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"

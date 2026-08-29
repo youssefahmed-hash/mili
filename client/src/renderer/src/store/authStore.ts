@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import { login as loginApi, register as registerApi } from '../api/auth.api'
-import type { User, RegisterPayload } from '../types/user'
+import { login as loginApi } from '../api/auth.api'
+import type { User } from '../types/user'
 
 const TOKEN_KEY = 'mili_auth_token'
 const USER_KEY = 'mili_auth_user'
@@ -10,7 +10,6 @@ interface AuthState {
   user: User | null
   error: string | null
   login: (username: string, password: string) => Promise<boolean>
-  register: (data: RegisterPayload) => Promise<boolean>
   updateUser: (data: Partial<User>) => void
   logout: () => void
 }
@@ -43,20 +42,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (e) {
       const err = e as { response?: { data?: { message?: string } } }
       set({ error: err.response?.data?.message || 'فشل تسجيل الدخول' })
-      return false
-    }
-  },
-
-  register: async (data) => {
-    set({ error: null })
-    try {
-      const res = await registerApi(data)
-      if (res.success) return true
-      set({ error: res.message || 'فشل التسجيل' })
-      return false
-    } catch (e) {
-      const err = e as { response?: { data?: { message?: string } } }
-      set({ error: err.response?.data?.message || 'فشل التسجيل' })
       return false
     }
   },

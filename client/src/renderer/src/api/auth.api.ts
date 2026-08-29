@@ -10,11 +10,6 @@ export const login = async (
   return response.data
 }
 
-export const register = async (data: RegisterPayload): Promise<ApiResponse<User>> => {
-  const response = await API.post('/auth/register', data)
-  return response.data
-}
-
 export const getProfile = async (): Promise<ApiResponse<User>> => {
   const response = await API.get('/auth/me')
   return response.data
@@ -45,7 +40,6 @@ export const deleteUser = async (id: string): Promise<ApiResponse<void>> => {
 
 export const updateProfile = async (data: {
   fullName?: string
-  department?: string
 }): Promise<ApiResponse<User>> => {
   const response = await API.put('/auth/me', data)
   return response.data

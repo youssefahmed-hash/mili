@@ -32,6 +32,7 @@ class AuthService {
             fullName: input.fullName || '',
             userType: input.userType || 'حربية',
             department: input.department || '',
+            degree: input.degree || 'جندي',
             role: input.role === 'admin' ? 'admin' : 'user'
         });
         const saved = await this.repo.save(user);
@@ -77,6 +78,8 @@ class AuthService {
             user.fullName = input.fullName;
         if (input.department !== undefined)
             user.department = input.department;
+        if (input.degree !== undefined)
+            user.degree = input.degree;
         if (input.userType !== undefined)
             user.userType = input.userType;
         if (input.role !== undefined)
@@ -95,8 +98,6 @@ class AuthService {
         }
         if (input.fullName !== undefined)
             user.fullName = input.fullName;
-        if (input.department !== undefined)
-            user.department = input.department;
         const saved = await this.repo.save(user);
         return sanitize(saved);
     }
@@ -142,7 +143,8 @@ class AuthService {
                 fullName: 'مدير النظام',
                 role: 'admin',
                 userType: 'حربية',
-                department: 'عمليات'
+                department: 'أفراد',
+                degree: 'ضابط'
             });
             await this.repo.save(admin);
             console.log('[seed] تم إنشاء مدير افتراضي (admin / admin123)');

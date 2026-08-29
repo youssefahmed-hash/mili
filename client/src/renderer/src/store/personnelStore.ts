@@ -56,7 +56,8 @@ export const usePersonnelStore = create<PersonnelState>((set, get) => ({
   },
 
   clearFilters: () => {
-    set({ filters: {} })
+    const ranks = get().filters.ranks
+    set({ filters: ranks ? { ranks } : {} })
   },
 
   setSelectedPersonnel: (personnel) => {

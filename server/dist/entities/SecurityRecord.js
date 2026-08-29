@@ -29,25 +29,21 @@ __decorate([
     __metadata("design:type", Personnel_1.Personnel)
 ], SecurityRecord.prototype, "personnel", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "varchar", length: 500 }),
-    __metadata("design:type", String)
-], SecurityRecord.prototype, "event", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: "varchar", length: 255 }),
-    __metadata("design:type", String)
-], SecurityRecord.prototype, "location", void 0);
-__decorate([
-    (0, typeorm_1.Column)({
-        type: "varchar",
-        length: 100,
-        default: "قيد المراجعة"
-    }),
-    __metadata("design:type", String)
-], SecurityRecord.prototype, "status", void 0);
-__decorate([
     (0, typeorm_1.Column)({ type: "varchar", length: 50, nullable: true }),
     __metadata("design:type", Object)
-], SecurityRecord.prototype, "eventTime", void 0);
+], SecurityRecord.prototype, "type", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 20, nullable: true }),
+    __metadata("design:type", Object)
+], SecurityRecord.prototype, "situationDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "text", nullable: true }),
+    __metadata("design:type", Object)
+], SecurityRecord.prototype, "details", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "text", nullable: true }),
+    __metadata("design:type", Object)
+], SecurityRecord.prototype, "notes", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)

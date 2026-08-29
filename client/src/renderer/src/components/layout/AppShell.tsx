@@ -1,5 +1,7 @@
 import React from 'react'
 import { useAppStore } from '../../store/appStore'
+import { useAuthStore } from '../../store/authStore'
+import { canAccessModule, firstAccessibleTab } from '../../constants/permissions'
 import { Header } from './Header'
 import { TopNav } from './TopNav'
 import { PersonnelModule } from '../personnel/PersonnelModule'
@@ -13,9 +15,12 @@ import { Settings } from '../Settings'
 
 export const AppShell: React.FC = () => {
   const { activeTab } = useAppStore()
+  const user = useAuthStore((s) => s.user)
+
+  const currentTab = canAccessModule(user, activeTab) ? activeTab : firstAccessibleTab(user)
 
   const renderActiveModule = (): React.ReactNode => {
-    switch (activeTab) {
+    switch (currentTab) {
       case 'الأفراد':
         return <PersonnelModule />
       case 'طابور الاجازات':

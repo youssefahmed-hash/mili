@@ -5,6 +5,7 @@ export interface User {
   role: 'admin' | 'user'
   userType: 'داخلية' | 'حربية'
   department: string
+  degree: 'جندي' | 'صف ضابط' | 'ضابط'
   createdAt: string
 }
 
@@ -14,5 +15,6 @@ export interface RegisterPayload {
   fullName?: string
   userType?: 'داخلية' | 'حربية'
   department?: string
+  degree?: 'جندي' | 'صف ضابط' | 'ضابط'
   role?: 'admin' | 'user'
 }

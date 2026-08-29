@@ -20,21 +20,18 @@ export class SecurityRecord {
   @JoinColumn({ name: "personnelId" })
   personnel!: Personnel;
 
-  @Column({ type: "varchar", length: 500 })
-  event!: string;
-
-  @Column({ type: "varchar", length: 255 })
-  location!: string;
-
-  @Column({
-    type: "varchar",
-    length: 100,
-    default: "قيد المراجعة"
-  })
-  status!: string;
-
+  // نوع الموقف الأمني: محاكمة | جزئات | تقييم سلوك
   @Column({ type: "varchar", length: 50, nullable: true })
-  eventTime!: string | null;
+  type!: string | null;
+
+  @Column({ type: "varchar", length: 20, nullable: true })
+  situationDate!: string | null;
+
+  @Column({ type: "text", nullable: true })
+  details!: string | null;
+
+  @Column({ type: "text", nullable: true })
+  notes!: string | null;
 
   @CreateDateColumn()
   createdAt!: Date;

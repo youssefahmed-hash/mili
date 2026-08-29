@@ -4,15 +4,6 @@ import { successResponse } from '../../utils/apiResponse'
 import { AuthRequest } from './auth.middleware'
 
 export class AuthController {
-  async register(req: Request, res: Response, next: NextFunction) {
-    try {
-      const user = await authService.register(req.body)
-      return successResponse(res, user, 'تم إنشاء الحساب بنجاح', 201)
-    } catch (err) {
-      next(err)
-    }
-  }
-
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { username, password } = req.body

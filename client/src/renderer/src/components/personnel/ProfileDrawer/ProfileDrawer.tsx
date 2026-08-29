@@ -123,7 +123,7 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ isOpen, onClose, p
                 </span>
                 <span>•</span>
                 <span>
-                  قسم - نقطه: <strong className="text-gray-200">{selectedPersonnel.unit}</strong>
+                   القسم: <strong className="text-gray-200">{selectedPersonnel.unit}</strong>
                 </span>
               </div>
             </div>

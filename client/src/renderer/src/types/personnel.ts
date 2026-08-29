@@ -130,16 +130,16 @@ export interface OperationRecord {
   personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank' | 'category'>
 }
 
-export interface SecurityRecord {
-  id: string
-  event: string
-  location: string
-  status: string
-  eventTime: string | null
-  createdAt: string
-  personnelId: string
-  personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank' | 'category'>
-}
+  export interface SecurityRecord {
+    id: string
+    type: string
+    situationDate: string | null
+    details: string | null
+    notes: string | null
+    createdAt: string
+    personnelId: string
+    personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank' | 'category'>
+  }
 
 export interface ApiResponse<T = unknown> {
   success: boolean

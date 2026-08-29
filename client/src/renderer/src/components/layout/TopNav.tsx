@@ -2,12 +2,13 @@ import React from 'react'
 import { Users, CalendarClock, HeartPulse, Crosshair, ShieldCheck, UserCog, ClipboardList } from 'lucide-react'
 import { useAppStore, TabType } from '../../store/appStore'
 import { useAuthStore } from '../../store/authStore'
+import { canAccessModule } from '../../constants/permissions'
 
 export const TopNav: React.FC = () => {
   const { activeTab, setActiveTab } = useAppStore()
   const user = useAuthStore((s) => s.user)
 
-  const navigationItems = [
+  const allItems = [
     {
       id: 'الأفراد' as TabType,
       label: user?.userType === 'داخلية' ? 'الشئون مجندين' : 'الأفراد',
@@ -21,12 +22,14 @@ export const TopNav: React.FC = () => {
   ]
 
   if (user?.role === 'admin') {
-    navigationItems.push({
+    allItems.push({
       id: 'المستخدمين' as TabType,
       label: 'المستخدمين',
       icon: UserCog
     })
   }
+
+  const navigationItems = allItems.filter((item) => canAccessModule(user, item.id))
 
   return (
     <div className="flex bg-military-800 border-b border-white/5 px-8 select-none">

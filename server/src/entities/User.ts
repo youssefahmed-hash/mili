@@ -23,6 +23,9 @@ export class User {
   @Column({ default: '' })
   department!: string
 
+  @Column({ type: 'varchar', default: 'جندي' })
+  degree!: 'جندي' | 'صف ضابط' | 'ضابط'
+
   @CreateDateColumn()
   createdAt!: Date
 }

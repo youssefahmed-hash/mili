@@ -12,6 +12,7 @@ export interface RegisterInput {
   fullName?: string
   userType?: 'داخلية' | 'حربية'
   department?: string
+  degree?: 'جندي' | 'صف ضابط' | 'ضابط'
   role?: 'admin' | 'user'
 }
 
@@ -37,6 +38,7 @@ export class AuthService {
       fullName: input.fullName || '',
       userType: input.userType || 'حربية',
       department: input.department || '',
+      degree: input.degree || 'جندي',
       role: input.role === 'admin' ? 'admin' : 'user'
     })
     const saved = await this.repo.save(user)
@@ -88,6 +90,7 @@ export class AuthService {
     }
     if (input.fullName !== undefined) user.fullName = input.fullName
     if (input.department !== undefined) user.department = input.department
+    if (input.degree !== undefined) user.degree = input.degree
     if (input.userType !== undefined) user.userType = input.userType
     if (input.role !== undefined) user.role = input.role
     if (input.password) user.password = await bcrypt.hash(input.password, SALT_ROUNDS)
@@ -95,7 +98,7 @@ export class AuthService {
     return sanitize(saved)
   }
 
-  async updateProfile(id: string, input: { fullName?: string; department?: string }) {
+  async updateProfile(id: string, input: { fullName?: string }) {
     const user = await this.repo.findOne({ where: { id } })
     if (!user) {
       const e: any = new Error('المستخدم غير موجود')
@@ -103,7 +106,6 @@ export class AuthService {
       throw e
     }
     if (input.fullName !== undefined) user.fullName = input.fullName
-    if (input.department !== undefined) user.department = input.department
     const saved = await this.repo.save(user)
     return sanitize(saved)
   }
@@ -152,7 +154,8 @@ export class AuthService {
         fullName: 'مدير النظام',
         role: 'admin',
         userType: 'حربية',
-        department: 'عمليات'
+        department: 'أفراد',
+        degree: 'ضابط'
       })
       await this.repo.save(admin)
       console.log('[seed] تم إنشاء مدير افتراضي (admin / admin123)')
