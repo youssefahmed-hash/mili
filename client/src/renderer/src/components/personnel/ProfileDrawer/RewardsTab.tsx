@@ -13,6 +13,7 @@ import type { Personnel, RewardRecord } from '../../../types/personnel'
 
 interface RewardsTabProps {
   data: Personnel
+  canManage?: boolean
 }
 
 const typeOptions = [
@@ -23,7 +24,7 @@ const typeOptions = [
   { value: 'شهادة تقدير', label: 'شهادة تقدير' }
 ]
 
-export const RewardsTab: React.FC<RewardsTabProps> = ({ data }) => {
+export const RewardsTab: React.FC<RewardsTabProps> = ({ data, canManage = true }) => {
   const [records, setRecords] = useState<RewardRecord[]>([])
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -122,15 +123,17 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({ data }) => {
       align: 'center' as const,
       render: (row) => (
         <div className="flex items-center justify-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded"
-            onClick={() => handleDelete(row.id)}
-            title="حذف السجل"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {canManage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded"
+              onClick={() => handleDelete(row.id)}
+              title="حذف السجل"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       )
     }

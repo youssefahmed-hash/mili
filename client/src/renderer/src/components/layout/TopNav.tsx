@@ -1,8 +1,8 @@
 import React from 'react'
-import { Users, CalendarClock, HeartPulse, Crosshair, ShieldCheck, UserCog, ClipboardList } from 'lucide-react'
+import { Users, CalendarClock, HeartPulse, Crosshair, ShieldCheck, UserCog, ClipboardList, CalendarCheck } from 'lucide-react'
 import { useAppStore, TabType } from '../../store/appStore'
 import { useAuthStore } from '../../store/authStore'
-import { canAccessModule } from '../../constants/permissions'
+import { canAccessTab } from '../../constants/permissions'
 
 export const TopNav: React.FC = () => {
   const { activeTab, setActiveTab } = useAppStore()
@@ -15,6 +15,7 @@ export const TopNav: React.FC = () => {
       icon: Users
     },
     { id: 'طابور الاجازات' as TabType, label: 'طابور الاجازات', icon: CalendarClock },
+    { id: 'اعتماد الإجازات' as TabType, label: 'اعتماد الإجازات', icon: CalendarCheck },
     { id: 'طابور الخدمات' as TabType, label: 'طابور الخدمات', icon: ClipboardList },
     { id: 'العيادة' as TabType, label: 'العيادة', icon: HeartPulse },
     { id: 'العمليات' as TabType, label: 'العمليات', icon: Crosshair },
@@ -29,7 +30,7 @@ export const TopNav: React.FC = () => {
     })
   }
 
-  const navigationItems = allItems.filter((item) => canAccessModule(user, item.id))
+  const navigationItems = allItems.filter((item) => canAccessTab(user, item.id))
 
   return (
     <div className="flex bg-military-800 border-b border-white/5 px-8 select-none">

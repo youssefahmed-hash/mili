@@ -13,6 +13,7 @@ interface Filters {
   rank?: string
   unit?: string
   status?: string
+  personnelType?: string
 }
 
 interface PersonnelState {
@@ -56,8 +57,11 @@ export const usePersonnelStore = create<PersonnelState>((set, get) => ({
   },
 
   clearFilters: () => {
-    const ranks = get().filters.ranks
-    set({ filters: ranks ? { ranks } : {} })
+    const { ranks, personnelType } = get().filters
+    const next: Filters = {}
+    if (ranks) next.ranks = ranks
+    if (personnelType) next.personnelType = personnelType
+    set({ filters: next })
   },
 
   setSelectedPersonnel: (personnel) => {

@@ -55,6 +55,7 @@ export class PersonnelService {
         rank?: string;
         unit?: string;
         status?: string;
+        personnelType?: string;
         page?: number;
         limit?: number;
     }) {
@@ -90,6 +91,16 @@ export class PersonnelService {
         }
         if (filters.status) {
             queryBuilder.andWhere("personnel.status = :status", { status: filters.status });
+        }
+
+        if (filters.personnelType) {
+            const types = (filters.personnelType as string)
+                .split(",")
+                .map((t) => t.trim())
+                .filter(Boolean);
+            if (types.length) {
+                queryBuilder.andWhere("personnel.personnelType IN (:...types)", { types });
+            }
         }
 
         queryBuilder.skip(skip).take(limit).orderBy("personnel.createdAt", "DESC");

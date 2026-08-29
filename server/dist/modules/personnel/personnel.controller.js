@@ -24,13 +24,14 @@ async function createAttachmentDocuments(personnelId, files) {
 class PersonnelController {
     async getAll(req, res, next) {
         try {
-            const { search, ranks, rank, unit, status, page, limit } = req.query;
+            const { search, ranks, rank, unit, status, personnelType, page, limit } = req.query;
             const filters = {
                 search: search,
                 ranks: ranks,
                 rank: rank,
                 unit: unit,
                 status: status,
+                personnelType: personnelType,
                 page: page ? parseInt(page) : undefined,
                 limit: limit ? parseInt(limit) : undefined,
             };

@@ -65,6 +65,15 @@ class PersonnelService {
         if (filters.status) {
             queryBuilder.andWhere("personnel.status = :status", { status: filters.status });
         }
+        if (filters.personnelType) {
+            const types = filters.personnelType
+                .split(",")
+                .map((t) => t.trim())
+                .filter(Boolean);
+            if (types.length) {
+                queryBuilder.andWhere("personnel.personnelType IN (:...types)", { types });
+            }
+        }
         queryBuilder.skip(skip).take(limit).orderBy("personnel.createdAt", "DESC");
         const [items, total] = await queryBuilder.getManyAndCount();
         return {

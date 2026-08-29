@@ -5,7 +5,7 @@ import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
 import { Button } from '../ui/Button'
 import { Upload } from 'lucide-react'
-import type { Personnel } from '../../types/personnel'
+import type { Personnel, PersonnelType } from '../../types/personnel'
 import { resolveFileUrl, isPdf } from '../../utils/fileUrl'
 import { getRankCategory } from '../../constants/categories'
 import { getUserSectionOptions } from '../../constants/departments'
@@ -15,6 +15,8 @@ import {
   WEAPON_BAN_OPTIONS
 } from '../../constants/personnelFields'
 import { useAuthStore } from '../../store/authStore'
+import { canManage, visiblePersonnelTypes } from '../../constants/permissions'
+import { MaskContext } from '../ui/maskContext'
 
 const ATTACHMENTS = [
   { key: 'cardImage', label: 'صورة البطاقة', hint: 'صورة أو ملف PDF' },
@@ -39,6 +41,12 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
   const { user: authUser } = useAuthStore()
   const isEdit = !!target
   const isComplete = mode === 'complete'
+  const maskLocked = isComplete && !canManage(authUser)
+
+  const typeOptions =
+    authUser?.role === 'admin'
+      ? PERSONNEL_TYPE_OPTIONS
+      : PERSONNEL_TYPE_OPTIONS.filter((o) => visiblePersonnelTypes(authUser).includes(o.value))
 
   // في وضع استكمال البيانات: الحقل يقفل (read-only) لو كان له قيمة أصلاً في السجل
   const compLock = (field: string): boolean =>
@@ -83,7 +91,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
   const [subordinates, setSubordinates] = useState('')
   const [supervisor, setSupervisor] = useState('')
   const [batchDate, setBatchDate] = useState('')
-  const [personnelType, setPersonnelType] = useState<'حربية' | 'داخلية'>(
+  const [personnelType, setPersonnelType] = useState<PersonnelType>(
     authUser?.userType === 'داخلية' ? 'داخلية' : 'حربية'
   )
   const [enlistmentDate, setEnlistmentDate] = useState('')
@@ -223,6 +231,16 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
       /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [target])
+
+  // لما يتغير نوع التبعية، يُعاد ضبط القسم (الوحدة) على قسم صالح لنوع التبعية المختار
+  useEffect(() => {
+    const opts = getUserSectionOptions(
+      personnelType === 'داخلية' ? 'داخلية' : personnelType === 'حربية' ? 'حربية' : undefined
+    )
+    if (!opts.some((o) => o.value === unit)) {
+      setUnit(opts[0]?.value || '')
+    }
+  }, [personnelType])
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     if (e.target.files && e.target.files[0]) {
@@ -459,7 +477,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
   ]
 
   const baseUnitOptions = getUserSectionOptions(
-    authUser?.userType === 'داخلية' ? 'داخلية' : 'حربية'
+    personnelType === 'داخلية' ? 'داخلية' : personnelType === 'حربية' ? 'حربية' : undefined
   )
   const unitOptions =
     unit && !baseUnitOptions.some((o) => o.value === unit)
@@ -503,6 +521,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
       footer={modalFooter}
       size="2xl"
     >
+      <MaskContext.Provider value={maskLocked}>
       <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
         {storeError && (
           <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm text-start font-bold">
@@ -773,9 +792,9 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
             />
             <Select
               label="حربية / داخلية"
-              options={PERSONNEL_TYPE_OPTIONS}
+              options={typeOptions}
               value={personnelType}
-              onChange={(e) => setPersonnelType(e.target.value as 'حربية' | 'داخلية')}
+              onChange={(e) => setPersonnelType(e.target.value as PersonnelType)}
 
               disabled={compLock('personnelType')}
             />
@@ -1054,7 +1073,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                     disabled={compLock('lastLeaveReturnDate')}
                   />
                   <Input
-                    label="عدد الجذات"
+                    label="عدد الجزئات"
                     type="number"
                     min={0}
                     value={guardCount}
@@ -1107,7 +1126,7 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
                 disabled={compLock('reserveDate')}
               />
               <Input
-                label="الجذات الاداريه"
+                label="الجزئات الإدارية"
                 type="number"
                 min={0}
                 value={administrativeUnits}
@@ -1237,18 +1256,25 @@ export const PersonnelFormModal: React.FC<PersonnelFormModalProps> = ({
             />
             <div className="md:col-span-2 flex flex-col gap-1 text-start">
               <label className="text-sm font-semibold text-gray-300">ملاحظات عامة</label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                disabled={compLock('notes')}
-                className="w-full bg-military-900 border border-white/10 hover:border-white/20 focus:border-military-primary focus:ring-2 focus:ring-military-primary/20 text-gray-200 text-sm rounded-lg p-2.5 outline-none transition-colors"
-                placeholder="اكتب أي تفاصيل أو ملاحظات إضافية تتعلق بالفرد هنا..."
-              />
+              {compLock('notes') && maskLocked ? (
+                <div className="w-full bg-military-900/60 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-gray-500 italic">
+                  مسجل — ليس لديك صلاحية برؤيته
+                </div>
+              ) : (
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  disabled={compLock('notes')}
+                  className="w-full bg-military-900 border border-white/10 hover:border-white/20 focus:border-military-primary focus:ring-2 focus:ring-military-primary/20 text-gray-200 text-sm rounded-lg p-2.5 outline-none transition-colors"
+                  placeholder="اكتب أي تفاصيل أو ملاحظات إضافية تتعلق بالفرد هنا..."
+                />
+              )}
             </div>
           </div>
         </div>
       </form>
+      </MaskContext.Provider>
     </Modal>
   )
 }

@@ -101,7 +101,7 @@ export const JobInfoTab: React.FC<JobInfoTabProps> = ({ data }) => {
               { label: 'السلاح', value: data.weapon || 'غير مسجل' },
               { label: 'تاريخ اخر عوده من اجازه', value: formatDate(data.lastLeaveReturnDate) },
               {
-                label: 'عدد الجذات',
+                label: 'عدد الجزئات',
                 value: data.guardCount != null ? String(data.guardCount) : 'غير مسجل'
               }
             ]
@@ -114,7 +114,7 @@ export const JobInfoTab: React.FC<JobInfoTabProps> = ({ data }) => {
           { label: 'تاريخ التجنيد', value: formatDate(data.enlistmentDate) },
           { label: 'تاريخ الرديف', value: formatDate(data.reserveDate) },
           {
-            label: 'الجذات الاداريه',
+            label: 'الجزئات الإدارية',
             value: data.administrativeUnits != null ? String(data.administrativeUnits) : 'غير مسجل'
           },
           { label: 'المحاكمات العسكرية', value: data.militaryTrials || 'غير مسجل' },

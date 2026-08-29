@@ -5,6 +5,9 @@ import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
 import { Button } from '../ui/Button'
 import { Table, Column } from '../ui/Table'
+import { MaskContext } from '../ui/maskContext'
+import { useAuthStore } from '../../store/authStore'
+import { canManage } from '../../constants/permissions'
 import { getPersonnelById, updatePersonnel } from '../../api/personnel.api'
 import {
   getSecurityByPersonnel,
@@ -47,7 +50,8 @@ const SituationLog: React.FC<{
   type: string
   entries: SecurityRecord[]
   onChanged: () => void
-}> = ({ personnelId, type, entries, onChanged }) => {
+  canView?: boolean
+}> = ({ personnelId, type, entries, onChanged, canView = true }) => {
   const [date, setDate] = useState<string>(() => todayStr())
   const [details, setDetails] = useState('')
   const [notes, setNotes] = useState('')
@@ -171,7 +175,13 @@ const SituationLog: React.FC<{
         </div>
       </div>
 
-      <Table columns={columns} data={entries} loading={false} />
+      {canView ? (
+        <Table columns={columns} data={entries} loading={false} />
+      ) : (
+        <div className="w-full bg-military-900/60 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-gray-500 italic">
+          سجلات مسجلة — ليس لديك صلاحية برؤيتها
+        </div>
+      )}
     </div>
   )
 }
@@ -253,6 +263,12 @@ export const SecurityProfile: React.FC<SecurityProfileProps> = ({ personnelId, o
     }
   }
 
+  const user = useAuthStore((s) => s.user)
+  const manage = canManage(user)
+
+  // للجندي: الحقول المسجلة مسبقاً تكون مقفولة ومقنّعة (إدخال فقط، بدون عرض بيانات موجودة)
+  const socialLock = (val: string | null | undefined): boolean => !manage && !!val
+
   const tabs = [
     { key: 'social', label: 'الحالة الاجتماعية', icon: FileText },
     ...SIT_TYPES
@@ -270,6 +286,7 @@ export const SecurityProfile: React.FC<SecurityProfileProps> = ({ personnelId, o
         </Button>
       }
     >
+      <MaskContext.Provider value={!manage}>
       <div className="flex flex-col gap-4">
         {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm">{error}</div>}
 
@@ -297,22 +314,22 @@ export const SecurityProfile: React.FC<SecurityProfileProps> = ({ personnelId, o
 
         {!loading && activeTab === 'social' && (
           <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Select label="الحالة الاجتماعية" options={maritalOptions} value={maritalStatus} onChange={(e) => setMaritalStatus(e.target.value)} />
-              <Input label="عدد أفراد الأسرة" type="number" min={0} value={familyMembersCount} onChange={(e) => setFamilyMembersCount(e.target.value)} />
-              <Select label="سكن الوالد والوالدة" options={parentsLivingOptions} value={parentsLivingSeparately} onChange={(e) => setParentsLivingSeparately(e.target.value)} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Select label="الحالة الصحية للوالد" options={healthOptions} value={fatherHealthStatus} onChange={(e) => setFatherHealthStatus(e.target.value)} />
-              <Input label="عمل الوالد" value={fatherWork} onChange={(e) => setFatherWork(e.target.value)} disabled={fatherHealthStatus === 'متوفي'} />
-              <Input label="هاتف الوالد" value={fatherPhone} onChange={(e) => setFatherPhone(e.target.value)} disabled={fatherHealthStatus === 'متوفي'} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Select label="الحالة الصحية للوالدة" options={healthOptions} value={motherHealthStatus} onChange={(e) => setMotherHealthStatus(e.target.value)} />
-              <Input label="عمل الوالدة" value={motherWork} onChange={(e) => setMotherWork(e.target.value)} disabled={motherHealthStatus === 'متوفي'} />
-              <Input label="هاتف الوالدة" value={motherPhone} onChange={(e) => setMotherPhone(e.target.value)} disabled={motherHealthStatus === 'متوفي'} />
-            </div>
-            <Input label="العمل قبل التجنيد" value={workBeforeEnlistment} onChange={(e) => setWorkBeforeEnlistment(e.target.value)} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Select label="الحالة الاجتماعية" options={maritalOptions} value={maritalStatus} onChange={(e) => setMaritalStatus(e.target.value)} disabled={socialLock(personnel?.maritalStatus)} />
+            <Input label="عدد أفراد الأسرة" type="number" min={0} value={familyMembersCount} onChange={(e) => setFamilyMembersCount(e.target.value)} disabled={socialLock(personnel?.familyMembersCount)} />
+            <Select label="سكن الوالد والوالدة" options={parentsLivingOptions} value={parentsLivingSeparately} onChange={(e) => setParentsLivingSeparately(e.target.value)} disabled={socialLock(personnel?.parentsLivingSeparately)} />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Select label="الحالة الصحية للوالد" options={healthOptions} value={fatherHealthStatus} onChange={(e) => setFatherHealthStatus(e.target.value)} disabled={socialLock(personnel?.fatherHealthStatus)} />
+            <Input label="عمل الوالد" value={fatherWork} onChange={(e) => setFatherWork(e.target.value)} disabled={fatherHealthStatus === 'متوفي' || socialLock(personnel?.fatherWork)} />
+            <Input label="هاتف الوالد" value={fatherPhone} onChange={(e) => setFatherPhone(e.target.value)} disabled={fatherHealthStatus === 'متوفي' || socialLock(personnel?.fatherPhone)} />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Select label="الحالة الصحية للوالدة" options={healthOptions} value={motherHealthStatus} onChange={(e) => setMotherHealthStatus(e.target.value)} disabled={socialLock(personnel?.motherHealthStatus)} />
+            <Input label="عمل الوالدة" value={motherWork} onChange={(e) => setMotherWork(e.target.value)} disabled={motherHealthStatus === 'متوفي' || socialLock(personnel?.motherWork)} />
+            <Input label="هاتف الوالدة" value={motherPhone} onChange={(e) => setMotherPhone(e.target.value)} disabled={motherHealthStatus === 'متوفي' || socialLock(personnel?.motherPhone)} />
+          </div>
+          <Input label="العمل قبل التجنيد" value={workBeforeEnlistment} onChange={(e) => setWorkBeforeEnlistment(e.target.value)} disabled={socialLock(personnel?.workBeforeEnlistment)} />
             <div className="flex justify-end">
               <Button variant="accent" onClick={handleSaveSocial} loading={saving}>
                 حفظ البيانات الاجتماعية
@@ -329,10 +346,12 @@ export const SecurityProfile: React.FC<SecurityProfileProps> = ({ personnelId, o
                 type={t.key}
                 entries={situations.filter((s) => s.type === t.key)}
                 onChanged={loadSituations}
+                canView={manage}
               />
             </div>
           ))}
       </div>
+      </MaskContext.Provider>
     </Modal>
   )
 }

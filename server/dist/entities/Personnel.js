@@ -108,8 +108,8 @@ __decorate([
 ], Personnel.prototype, "unit", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: "enum",
-        enum: ['حربية', 'داخلية'],
+        type: "varchar",
+        length: 50,
         default: 'حربية'
     }),
     __metadata("design:type", String)

@@ -8,7 +8,8 @@ import { PersonnelFormModal } from './PersonnelFormModal'
 import { DeleteConfirmModal } from './DeleteConfirmModal'
 import { ProfileDrawer } from './ProfileDrawer/ProfileDrawer'
 import { Tabs } from '../ui/Tabs'
-import { CATEGORY_TABS, TAB_RANK_MAP } from '../../constants/categories'
+import { CATEGORY_TABS, TAB_RANK_MAP, RankCategory } from '../../constants/categories'
+import { visibleCategories, canManage, visiblePersonnelTypes } from '../../constants/permissions'
 import type { Personnel } from '../../types/personnel'
 
 export const PersonnelModule: React.FC = () => {
@@ -37,6 +38,12 @@ export const PersonnelModule: React.FC = () => {
   useEffect(() => {
     setFilters({ ranks: TAB_RANK_MAP[activeTab].join(',') })
   }, [activeTab, setFilters])
+
+  // تقييد قائمة الأفراد حسب نوع التبعية: حربية/داخلية يشوفون نوعهم + «تشغيل حربيه» المشترك؛ الأدمن يشوف الكل
+  const allowedTypes = visiblePersonnelTypes(user)
+  useEffect(() => {
+    setFilters({ personnelType: allowedTypes.join(',') })
+  }, [user?.userType, setFilters])
 
   useEffect(() => {
     fetchPersonnelList(searchQuery, 1)
@@ -75,6 +82,11 @@ export const PersonnelModule: React.FC = () => {
     setIsDrawerOpen(true)
   }
 
+  // تصفية تبويبات الفئات حسب صلاحية رؤية الرتب للمستخدم (جندي←جنود فقط، صف ضابط←+صف ضباط، ضابط←الكل)
+  const allowedCats = visibleCategories(user) as RankCategory[]
+  const visibleTabs = CATEGORY_TABS.filter((t) => allowedCats.includes(t.id as RankCategory))
+  const manage = canManage(user)
+
   return (
     <div className="flex flex-col gap-6 w-full">
       {/* Page Header Area */}
@@ -91,7 +103,7 @@ export const PersonnelModule: React.FC = () => {
       </div>
 
       {/* Category Tabs */}
-      <Tabs tabs={CATEGORY_TABS} activeTab={activeTab} onChange={setActiveTab} />
+      <Tabs tabs={visibleTabs} activeTab={activeTab} onChange={setActiveTab} />
 
       {/* Toolbar Filters + Add button */}
       <PersonnelToolbar onAddClick={handleAddClick} />
@@ -106,6 +118,7 @@ export const PersonnelModule: React.FC = () => {
         onEditClick={handleEditClick}
         onCompleteClick={handleCompleteClick}
         onDeleteClick={handleDeleteClick}
+        canManage={manage}
       />
 
       {/* Form Modal (Create / Edit / Complete) */}

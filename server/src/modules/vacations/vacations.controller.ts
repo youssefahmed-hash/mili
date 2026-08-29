@@ -43,6 +43,29 @@ export class VacationsController {
             next(err);
         }
     }
+
+    async getAll(req: Request, res: Response, next: NextFunction) {
+        try {
+            const status = req.query.status as string | undefined;
+            const list = await vacationsService.findAll(status);
+            return successResponse(res, list, "تم جلب سجل الإجازات بنجاح");
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async bulkCreate(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { personnelIds, ...data } = req.body;
+            if (!Array.isArray(personnelIds) || personnelIds.length === 0) {
+                return errorResponse(res, "لم يتم تحديد أي فرد", 400);
+            }
+            const created = await vacationsService.bulkCreate(personnelIds, data);
+            return successResponse(res, created, "تم تسجيل الإجازات بنجاح", 201);
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export const vacationsController = new VacationsController();

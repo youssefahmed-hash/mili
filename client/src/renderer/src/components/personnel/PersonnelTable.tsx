@@ -19,6 +19,7 @@ interface PersonnelTableProps {
   onEditClick: (row: Personnel) => void
   onCompleteClick: (row: Personnel) => void
   onDeleteClick: (row: Personnel) => void
+  canManage?: boolean
 }
 
 export const PersonnelTable: React.FC<PersonnelTableProps> = ({
@@ -29,7 +30,8 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
   onViewClick,
   onEditClick,
   onCompleteClick,
-  onDeleteClick
+  onDeleteClick,
+  canManage = true
 }) => {
   const statusBadgeVariants: Record<string, 'success' | 'warning' | 'danger' | 'secondary'> = {
     'داخل القطاع': 'success',
@@ -91,15 +93,17 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
           >
             <Eye className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-1.5 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-all"
-            onClick={() => onEditClick(row)}
-            title="تعديل البيانات"
-          >
-            <Edit3 className="h-4 w-4" />
-          </Button>
+          {canManage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1.5 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-all"
+              onClick={() => onEditClick(row)}
+              title="تعديل البيانات"
+            >
+              <Edit3 className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -109,15 +113,17 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
           >
             <FilePlus className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
-            onClick={() => onDeleteClick(row)}
-            title="حذف السجل"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {canManage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+              onClick={() => onDeleteClick(row)}
+              title="حذف السجل"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       )
     }

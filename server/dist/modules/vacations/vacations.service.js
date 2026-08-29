@@ -42,6 +42,24 @@ class VacationsService {
         await this.syncPersonnelStatus(personnelId);
         return true;
     }
+    async findAll(status) {
+        const where = status ? { status } : {};
+        return await this.repository.find({
+            where,
+            relations: ["personnel"],
+            order: { startDate: "DESC" }
+        });
+    }
+    async bulkCreate(personnelIds, data) {
+        const created = [];
+        for (const pid of personnelIds) {
+            const vacation = this.repository.create({ ...data, personnelId: pid });
+            const saved = await this.repository.save(vacation);
+            await this.syncPersonnelStatus(pid);
+            created.push(saved);
+        }
+        return created;
+    }
     async syncAllPersonnelStatuses() {
         const personnelRepo = data_source_1.AppDataSource.getRepository(Personnel_1.Personnel);
         const all = await personnelRepo.find();

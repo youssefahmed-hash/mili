@@ -13,6 +13,7 @@ import type { Personnel, PenaltyRecord } from '../../../types/personnel'
 
 interface PenaltiesTabProps {
   data: Personnel
+  canManage?: boolean
 }
 
 const typeOptions = [
@@ -24,7 +25,7 @@ const typeOptions = [
   { value: 'تأنيب', label: 'تأنيب' }
 ]
 
-export const PenaltiesTab: React.FC<PenaltiesTabProps> = ({ data }) => {
+export const PenaltiesTab: React.FC<PenaltiesTabProps> = ({ data, canManage = true }) => {
   const [records, setRecords] = useState<PenaltyRecord[]>([])
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -123,15 +124,17 @@ export const PenaltiesTab: React.FC<PenaltiesTabProps> = ({ data }) => {
       align: 'center' as const,
       render: (row) => (
         <div className="flex items-center justify-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded"
-            onClick={() => handleDelete(row.id)}
-            title="حذف السجل"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {canManage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded"
+              onClick={() => handleDelete(row.id)}
+              title="حذف السجل"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       )
     }

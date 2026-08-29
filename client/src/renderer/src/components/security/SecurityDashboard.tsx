@@ -7,10 +7,13 @@ import { PersonnelSelect } from '../ui/PersonnelSelect'
 import { SecurityProfile } from './SecurityProfile'
 import { getAllPersonnel } from '../../api/personnel.api'
 import { useAppStore } from '../../store/appStore'
+import { useAuthStore } from '../../store/authStore'
+import { visibleCategories } from '../../constants/permissions'
 import type { Personnel } from '../../types/personnel'
 
 export const SecurityDashboard: React.FC = () => {
   const { searchQuery } = useAppStore()
+  const user = useAuthStore((s) => s.user)
   const [personnel, setPersonnel] = useState<Personnel[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -126,7 +129,11 @@ export const SecurityDashboard: React.FC = () => {
         }
       >
         <div className="flex flex-col gap-4">
-          <PersonnelSelect value={registerId ?? ''} onChange={(v) => setRegisterId(v)} />
+          <PersonnelSelect
+            value={registerId ?? ''}
+            onChange={(v) => setRegisterId(v)}
+            categories={visibleCategories(user)}
+          />
           <p className="text-sm text-gray-400">
             اختر الفرد ثم اضغط «فتح الملف الأمني» لتسجيل أو تعديل محاكماته، جزئاته، تقييم سلوكه والحالة
             الاجتماعية.

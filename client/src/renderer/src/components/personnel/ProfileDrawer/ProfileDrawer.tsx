@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { usePersonnelStore } from '../../../store/personnelStore'
+import { useAuthStore } from '../../../store/authStore'
+import { canManage } from '../../../constants/permissions'
 import { Drawer } from '../../ui/Drawer'
 import { Tabs, TabItem } from '../../ui/Tabs'
 import { User, FileText, Calendar, Phone, Briefcase, Award, ShieldAlert } from 'lucide-react'
@@ -22,6 +24,8 @@ interface ProfileDrawerProps {
 
 export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ isOpen, onClose, personnelId }) => {
   const { selectedPersonnel, fetchPersonnelDetail, loading } = usePersonnelStore()
+  const user = useAuthStore((s) => s.user)
+  const manage = canManage(user)
   const [activeTab, setActiveTab] = useState('basic')
 
   useEffect(() => {
@@ -53,13 +57,13 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ isOpen, onClose, p
       case 'documents':
         return <DocumentsTab data={selectedPersonnel} />
       case 'vacations':
-        return <VacationsTab data={selectedPersonnel} />
+        return <VacationsTab data={selectedPersonnel} canManage={manage} />
       case 'services':
-        return <ServicesTab data={selectedPersonnel} />
+        return <ServicesTab data={selectedPersonnel} canManage={manage} />
       case 'rewards':
-        return <RewardsTab data={selectedPersonnel} />
+        return <RewardsTab data={selectedPersonnel} canManage={manage} />
       case 'penalties':
-        return <PenaltiesTab data={selectedPersonnel} />
+        return <PenaltiesTab data={selectedPersonnel} canManage={manage} />
       default:
         return <BasicInfoTab data={selectedPersonnel} />
     }

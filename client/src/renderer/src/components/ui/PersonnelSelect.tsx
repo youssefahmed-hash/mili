@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { getAllPersonnel } from '../../api/personnel.api'
+import { getRankCategory } from '../../constants/categories'
 import type { Personnel } from '../../types/personnel'
 
 interface PersonnelSelectProps {
   label?: string
   value: string
   onChange: (value: string) => void
+  onSelect?: (personnel: Personnel) => void
   error?: string
   required?: boolean
   ranks?: string
+  categories?: string[]
 }
 
 const labelOf = (p: Personnel): string => `${p.fullName} (${p.militaryId}) - ${p.rank}`
@@ -19,7 +22,9 @@ export const PersonnelSelect: React.FC<PersonnelSelectProps> = ({
   onChange,
   error,
   required = true,
-  ranks
+  ranks,
+  categories,
+  onSelect
 }) => {
   const [options, setOptions] = useState<Personnel[]>([])
   const [loading, setLoading] = useState(false)
@@ -48,14 +53,17 @@ export const PersonnelSelect: React.FC<PersonnelSelectProps> = ({
   }, [options, value])
 
   const q = text.trim().toLowerCase()
+  const visible = categories
+    ? options.filter((p) => categories.includes(getRankCategory(p.rank)))
+    : options
   const filtered = q
-    ? options.filter(
+    ? visible.filter(
         (p) =>
           p.fullName.toLowerCase().includes(q) ||
           p.militaryId.toLowerCase().includes(q) ||
           p.rank.toLowerCase().includes(q)
       )
-    : options
+    : visible
 
   return (
     <div className="flex flex-col gap-1 text-start">
@@ -90,6 +98,7 @@ export const PersonnelSelect: React.FC<PersonnelSelectProps> = ({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
                     onChange(p.id)
+                    onSelect?.(p)
                     setText(labelOf(p))
                     setOpen(false)
                   }}

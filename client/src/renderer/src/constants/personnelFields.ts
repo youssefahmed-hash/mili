@@ -1,6 +1,7 @@
 export const PERSONNEL_TYPE_OPTIONS = [
   { value: 'حربية', label: 'حربية' },
-  { value: 'داخلية', label: 'داخلية' }
+  { value: 'داخلية', label: 'داخلية' },
+  { value: 'تشغيل حربيه', label: 'تشغيل حربيه' }
 ]
 
 export const TAMAM_OPTIONS = [

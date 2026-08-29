@@ -1,4 +1,5 @@
 import React from 'react'
+import { MaskContext } from './maskContext'
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string
@@ -7,7 +8,22 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, startIcon, className = '', id, ...props }, ref) => {
+  ({ label, error, startIcon, className = '', id, disabled, ...props }, ref) => {
+    const masked = React.useContext(MaskContext)
+    if (disabled && masked) {
+      return (
+        <div className="flex flex-col gap-1 w-full text-start">
+          {label && (
+            <label htmlFor={id} className="text-sm font-semibold text-gray-300">
+              {label}
+            </label>
+          )}
+          <div className="w-full bg-military-900/60 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-gray-500 italic">
+            مسجل — ليس لديك صلاحية برؤيته
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="flex flex-col gap-1 w-full text-start">
         {label && (

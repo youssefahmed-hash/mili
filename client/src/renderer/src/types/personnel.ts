@@ -1,5 +1,5 @@
 export type PersonnelCategory = 'soldier' | 'non_commissioned_officer' | 'officer'
-export type PersonnelType = 'حربية' | 'داخلية'
+export type PersonnelType = 'حربية' | 'داخلية' | 'تشغيل حربيه'
 
 export interface Personnel {
   id: string
@@ -91,6 +91,7 @@ export interface Vacation {
   status: string
   notes: string | null
   personnelId: string
+  personnel?: Personnel
 }
 
 export interface Form {
@@ -116,7 +117,7 @@ export interface ClinicRecord {
   treatment: string | null
   createdAt: string
   personnelId: string
-  personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank' | 'category'>
+  personnel?: Pick<Personnel, 'id' | 'fullName' | 'militaryId' | 'rank' | 'category' | 'personnelType'>
 }
 
 export interface OperationRecord {

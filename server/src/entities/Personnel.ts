@@ -10,7 +10,7 @@ import { Reward } from "./Reward";
 import { Penalty } from "./Penalty";
 
 export type PersonnelCategory = 'soldier' | 'non_commissioned_officer' | 'officer';
-export type PersonnelType = 'حربية' | 'داخلية';
+export type PersonnelType = 'حربية' | 'داخلية' | 'تشغيل حربيه';
 
 @Entity("personnel")
 export class Personnel {
@@ -78,8 +78,8 @@ export class Personnel {
     unit!: string;
 
     @Column({
-        type: "enum",
-        enum: ['حربية', 'داخلية'],
+        type: "varchar",
+        length: 50,
         default: 'حربية'
     })
     personnelType!: PersonnelType;

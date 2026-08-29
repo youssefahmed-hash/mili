@@ -15,9 +15,10 @@ import type { Personnel, Vacation } from '../../../types/personnel'
 
 interface VacationsTabProps {
   data: Personnel
+  canManage?: boolean
 }
 
-export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
+export const VacationsTab: React.FC<VacationsTabProps> = ({ data, canManage = true }) => {
   const [vacations, setVacations] = useState<Vacation[]>([])
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -203,7 +204,7 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
       align: 'center' as const,
       render: (row) => (
         <div className="flex items-center justify-center gap-1">
-          {row.status === 'معلقة' && (
+          {canManage && row.status === 'معلقة' && (
             <>
               <Button
                 variant="ghost"
@@ -225,24 +226,28 @@ export const VacationsTab: React.FC<VacationsTabProps> = ({ data }) => {
               </Button>
             </>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-1 text-blue-400 hover:bg-blue-500/10 rounded"
-            onClick={() => handleEdit(row)}
-            title="تعديل السجل"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded"
-            onClick={() => handleDelete(row.id)}
-            title="حذف السجل"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {canManage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1 text-blue-400 hover:bg-blue-500/10 rounded"
+              onClick={() => handleEdit(row)}
+              title="تعديل السجل"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
+          {canManage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded"
+              onClick={() => handleDelete(row.id)}
+              title="حذف السجل"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       )
     }

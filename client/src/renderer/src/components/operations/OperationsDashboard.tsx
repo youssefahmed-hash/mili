@@ -10,6 +10,8 @@ import { PersonnelSelect } from '../ui/PersonnelSelect'
 import { Tabs } from '../ui/Tabs'
 import { RECORD_TABS, TAB_RANK_MAP } from '../../constants/categories'
 import { useAppStore } from '../../store/appStore'
+import { useAuthStore } from '../../store/authStore'
+import { visibleCategories } from '../../constants/permissions'
 import {
   getOperationsRecords,
   createOperationRecord,
@@ -21,6 +23,7 @@ export const OperationsDashboard: React.FC = () => {
   const [records, setRecords] = useState<OperationRecord[]>([])
   const [activeTab, setActiveTab] = useState<string>('all')
   const { searchQuery } = useAppStore()
+  const user = useAuthStore((s) => s.user)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -267,6 +270,7 @@ export const OperationsDashboard: React.FC = () => {
             value={formData.personnelId}
             onChange={(v) => setFormData((p) => ({ ...p, personnelId: v }))}
             ranks={TAB_RANK_MAP[activeTab].join(',')}
+            categories={visibleCategories(user)}
           />
           <Input
             label="اسم العملية / المهمة"

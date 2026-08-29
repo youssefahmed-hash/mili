@@ -10,6 +10,8 @@ import { PersonnelSelect } from '../ui/PersonnelSelect'
 import { Tabs } from '../ui/Tabs'
 import { RECORD_TABS, TAB_RANK_MAP } from '../../constants/categories'
 import { useAppStore } from '../../store/appStore'
+import { useAuthStore } from '../../store/authStore'
+import { visibleCategories } from '../../constants/permissions'
 import { getClinicRecords, createClinicRecord, deleteClinicRecord } from '../../api/clinic.api'
 import type { ClinicRecord } from '../../types/personnel'
 
@@ -17,10 +19,12 @@ export const ClinicDashboard: React.FC = () => {
   const [records, setRecords] = useState<ClinicRecord[]>([])
   const [activeTab, setActiveTab] = useState<string>('all')
   const { searchQuery } = useAppStore()
+  const user = useAuthStore((s) => s.user)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [selectedType, setSelectedType] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     personnelId: '',
     examinationType: 'كشف دوري',
@@ -88,6 +92,7 @@ export const ClinicDashboard: React.FC = () => {
           diagnosis: '',
           treatment: ''
         })
+        setSelectedType(null)
         setIsModalOpen(false)
         fetchRecords()
       } else {
@@ -168,11 +173,11 @@ export const ClinicDashboard: React.FC = () => {
     {
       key: 'clinicType',
       label: 'النوع',
-      render: (row) => (
-        <Badge variant={row.clinicType === 'حربية' ? 'primary' : 'secondary'}>
-          {row.clinicType === 'حربية' ? 'حربية' : 'داخلية'}
-        </Badge>
-      )
+      render: (row) => {
+        const v = row.clinicType || 'حربية'
+        const variant = v === 'حربية' ? 'primary' : v === 'داخلية' ? 'secondary' : 'warning'
+        return <Badge variant={variant}>{v}</Badge>
+      }
     },
     {
       key: 'carnetNumber',
@@ -303,8 +308,29 @@ export const ClinicDashboard: React.FC = () => {
           <PersonnelSelect
             value={formData.personnelId}
             onChange={(v) => setFormData((p) => ({ ...p, personnelId: v }))}
+            onSelect={(p) => {
+              setSelectedType(p.personnelType)
+              setFormData((f) => ({ ...f, clinicType: p.personnelType }))
+            }}
             ranks={TAB_RANK_MAP[activeTab].join(',')}
+            categories={visibleCategories(user)}
           />
+          {selectedType && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-400">تبعية الفرد:</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                  selectedType === 'حربية'
+                    ? 'bg-blue-500/20 text-blue-300'
+                    : selectedType === 'داخلية'
+                      ? 'bg-purple-500/20 text-purple-300'
+                      : 'bg-amber-500/20 text-amber-300'
+                }`}
+              >
+                {selectedType}
+              </span>
+            </div>
+          )}
           <Select
             label="نوع الكشف الطبي"
             options={typeOptions}
@@ -328,15 +354,6 @@ export const ClinicDashboard: React.FC = () => {
             value={formData.notes}
             onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
             placeholder="اكتب الملاحظات..."
-          />
-          <Select
-            label="نوع الفرد"
-            options={[
-              { value: 'حربية', label: 'حربية' },
-              { value: 'داخلية', label: 'داخلية' }
-            ]}
-            value={formData.clinicType}
-            onChange={(e) => setFormData((p) => ({ ...p, clinicType: e.target.value }))}
           />
           {formData.clinicType === 'حربية' && (
             <Input
