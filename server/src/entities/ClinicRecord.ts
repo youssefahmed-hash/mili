@@ -39,6 +39,12 @@ export class ClinicRecord {
   @Column({ type: "varchar", length: 50, default: "حربية" })
   clinicType!: string;
 
+  @Column({ type: "varchar", length: 20, default: "داخل الوحدة" })
+  locationType!: string;
+
+  @Column({ type: "varchar", length: 255, nullable: true })
+  locationAddress!: string | null;
+
   @Column({ type: "varchar", length: 100, nullable: true })
   carnetNumber!: string | null;
 

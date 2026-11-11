@@ -20,7 +20,7 @@ export class SecurityRecord {
   @JoinColumn({ name: "personnelId" })
   personnel!: Personnel;
 
-  // نوع الموقف الأمني: محاكمة | جزئات | تقييم سلوك
+  // نوع الموقف الأمني: محاكمة | جزاءات | تقييم سلوك
   @Column({ type: "varchar", length: 50, nullable: true })
   type!: string | null;
 

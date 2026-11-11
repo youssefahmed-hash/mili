@@ -1,9 +1,38 @@
-import React from 'react'
-import { Eye, Edit3, Trash2, FilePlus, ChevronRight, ChevronLeft } from 'lucide-react'
+import React, { useState } from 'react'
+import { Eye, Edit3, Trash2, FilePlus, ChevronRight, ChevronLeft, Printer } from 'lucide-react'
 import { Table, Column } from '../ui/Table'
 import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
+import { useAuthStore } from '../../store/authStore'
+import { printPersonnelDossier } from './PersonnelDossier'
+import { displayRank } from '../../utils/rankDisplay'
 import type { Personnel } from '../../types/personnel'
+import { resolveFileUrl } from '../../utils/fileUrl'
+import { isManager } from '../../constants/permissions'
+
+// مؤثرات القوة — تظهر كـ badge جنب اسم الفرد زي كلمة «مستجد»
+const CONDITION_BADGES: { key: keyof Personnel; label: string; className: string }[] = [
+  {
+    key: 'condWeaponBan',
+    label: 'منع سلاح',
+    className: 'text-red-300 bg-red-500/15 border-red-500/30'
+  },
+  {
+    key: 'condNeuro',
+    label: 'نفسية وعصبية',
+    className: 'text-violet-300 bg-violet-500/15 border-violet-500/30'
+  },
+  {
+    key: 'condStruckDischarged',
+    label: 'شطب مسرح',
+    className: 'text-orange-300 bg-orange-500/15 border-orange-500/30'
+  },
+  {
+    key: 'condStruckRetained',
+    label: 'شطب غير مسرح',
+    className: 'text-amber-300 bg-amber-500/15 border-amber-500/30'
+  }
+]
 
 interface PersonnelTableProps {
   loading: boolean
@@ -33,11 +62,30 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
   onDeleteClick,
   canManage = true
 }) => {
+  const user = useAuthStore((s) => s.user)
+  const isAdmin = isManager(user)
+  const [printingId, setPrintingId] = useState<string | null>(null)
+
+  const handlePrintDossier = async (row: Personnel): Promise<void> => {
+    if (printingId) return
+    setPrintingId(row.id)
+    try {
+      await printPersonnelDossier(row.id, user?.fullName || user?.username || 'المدير')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      alert(`فشل طباعة الملف الشامل: ${msg}`)
+    } finally {
+      setPrintingId(null)
+    }
+  }
+
   const statusBadgeVariants: Record<string, 'success' | 'warning' | 'danger' | 'secondary'> = {
     'داخل القطاع': 'success',
     اجازه: 'warning',
     ماموريه: 'secondary',
     'عرض مستشفى': 'danger',
+    'مستشفى خارجي': 'danger',
+    محكمه: 'danger',
     غياب: 'danger',
     'علامه 91': 'warning'
   }
@@ -50,7 +98,7 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
         <div className="flex items-center gap-3">
           {row.photo ? (
             <img
-              src={`http://localhost:5000${row.photo}`}
+              src={resolveFileUrl(row.photo) || ''}
               alt={row.fullName}
               className="h-9 w-9 rounded-full object-cover border border-white/10"
             />
@@ -65,12 +113,31 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
           >
             {row.fullName}
           </span>
+          {(row.personnelType || '').includes('مستجد') && (
+            <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 rounded px-1.5 py-0.5">
+              مستجد
+            </span>
+          )}
+          {CONDITION_BADGES.filter((c) => Boolean(row[c.key])).map((c) => (
+            <span
+              key={c.key}
+              className={`text-[10px] font-bold border rounded px-1.5 py-0.5 ${c.className}`}
+            >
+              {c.key === 'condWeaponBan' ? row.weaponBanType || c.label : c.label}
+            </span>
+          ))}
         </div>
       )
     },
-    { key: 'rank', label: 'الرتبة' },
+    { key: 'rank', label: 'الرتبة', render: (row) => displayRank(row.rank, row.personnelType) },
     { key: 'militaryId', label: 'الرقم العسكري' },
-    { key: 'unit', label: 'القسم' },
+    { key: 'unit', label: 'القسم', render: (row) => row.unit || 'بدون قسم' },
+    { key: 'sectorDistribution', label: 'التوزيع', render: (row) => row.sectorDistribution || '—' },
+    {
+      key: 'workBeforeEnlistment',
+      label: 'العمل قبل التجنيد',
+      render: (row) => row.workBeforeEnlistment || '—'
+    },
     {
       key: 'status',
       label: 'الحالة',
@@ -93,6 +160,18 @@ export const PersonnelTable: React.FC<PersonnelTableProps> = ({
           >
             <Eye className="h-4 w-4" />
           </Button>
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1.5 text-gray-400 hover:text-violet-400 hover:bg-violet-500/10 rounded-lg transition-all"
+              onClick={() => handlePrintDossier(row)}
+              disabled={printingId === row.id}
+              title="طباعة الملف الشامل (PDF)"
+            >
+              <Printer className="h-4 w-4" />
+            </Button>
+          )}
           {canManage && (
             <Button
               variant="ghost"

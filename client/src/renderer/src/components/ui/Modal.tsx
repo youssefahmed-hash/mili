@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { Button } from './Button'
 
@@ -52,7 +53,10 @@ export const Modal: React.FC<ModalProps> = ({
     '2xl': 'max-w-6xl'
   }
 
-  return (
+  // نرندر الـ portal على body عشان المودالات المتداخلة (زي مودال اختيار الدوا
+  // جوّه مودال الكشف) متتقصّش — الـ backdrop-filter في .glassmorphism بيخلي
+  // العنصر ده containing block لأي fixed جوّه.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
       {/* Backdrop */}
       <div
@@ -82,6 +86,7 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

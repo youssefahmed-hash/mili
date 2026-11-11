@@ -5,6 +5,8 @@ import { updateProfile, changePassword } from '../api/auth.api'
 import { Input } from './ui/Input'
 import { Button } from './ui/Button'
 import { Badge } from './ui/Badge'
+import { isManager } from '../constants/permissions'
+import { ROLE_LABELS } from '../types/user'
 
 const Section: React.FC<{
   title: string
@@ -136,8 +138,10 @@ export const Settings: React.FC = () => {
               </div>
               <div className='flex flex-col gap-2'>
                 <span className='text-xs text-gray-400'>الدور</span>
-                <Badge variant={user.role === 'admin' ? 'warning' : 'primary'}>
-                  {user.role === 'admin' ? 'مدير' : 'مستخدم'}
+                <Badge
+                  variant={isManager(user) ? 'warning' : 'primary'}
+                >
+                  {ROLE_LABELS[user.role] || user.role}
                 </Badge>
               </div>
             </div>

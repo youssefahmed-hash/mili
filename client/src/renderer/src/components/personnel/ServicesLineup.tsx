@@ -4,6 +4,9 @@ import { getServicesLineup } from '../../api/services.api'
 import { useAppStore } from '../../store/appStore'
 import type { ServicesLineup as Lineup, ServicesLineupItem } from '../../types/personnel'
 import { useAuthStore } from '../../store/authStore'
+import { isSuperAdmin } from '../../constants/permissions'
+import { displayRank } from '../../utils/rankDisplay'
+import { matchesAnySearch } from '../../utils/arabicSearch'
 import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
@@ -39,7 +42,7 @@ const RosterTable: React.FC<{ rows: ServicesLineupItem[]; isToday: boolean }> = 
         <div className="flex flex-col">
           <span className="font-bold text-white">{row.fullName}</span>
           <span className="text-xs text-gray-400">
-            {row.rank} / {row.militaryId}
+            {displayRank(row.rank, row.personnelType) || row.rank} / {row.militaryId}
           </span>
         </div>
       )
@@ -98,13 +101,16 @@ export const ServicesLineup: React.FC = () => {
   const [lineup, setLineup] = useState<Lineup | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // null = كل الأقسام | 'military' | 'internal' — بيتشغل من كروت الملخص
+  const [sectorView, setSectorView] = useState<'military' | 'internal' | null>(null)
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.role === 'admin'
+  const isSuperAdminUser = isSuperAdmin(user)
   const userType = user?.userType
   const isMilitary = userType === 'حربية'
   const isInternal = userType === 'داخلية'
-  const showMilitary = isAdmin || isMilitary
-  const showInternal = isAdmin || isInternal
+  // مدير النظام يشوف القسمين؛ غيره يرى قسم نوعه فقط (تشغيل يتبع الحربية)
+  const showMilitary = isSuperAdminUser || isMilitary
+  const showInternal = isSuperAdminUser || isInternal
 
   const fetchLineup = useCallback(async () => {
     setLoading(true)
@@ -131,9 +137,8 @@ export const ServicesLineup: React.FC = () => {
   const isToday = date === todayStr()
 
   const { searchQuery } = useAppStore()
-  const q = (searchQuery || '').trim().toLowerCase()
   const matchS = (p: ServicesLineupItem): boolean =>
-    !q || p.fullName.toLowerCase().includes(q) || p.militaryId.toLowerCase().includes(q)
+    matchesAnySearch([p.fullName, p.militaryId], searchQuery)
   const militaryRows = lineup ? lineup.military.filter(matchS) : []
   const internalRows = lineup ? lineup.internal.filter(matchS) : []
 
@@ -190,9 +195,57 @@ export const ServicesLineup: React.FC = () => {
       )}
 
       {lineup && (
-        <div className="grid grid-cols-1 gap-6 w-full">
-          {showMilitary && section('خدمات الحربية', militaryRows, 'text-amber-400')}
-          {showInternal && section('خدمات الداخلية', internalRows, 'text-sky-400')}
+        <div className="flex flex-col gap-4">
+          {/* كروت الملخص — كل كارت يعرض قسمه بس */}
+          {(showMilitary || showInternal) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {showMilitary && (
+                <button
+                  type="button"
+                  onClick={() => setSectorView(sectorView === 'military' ? null : 'military')}
+                  title={sectorView === 'military' ? 'عرض كل الأقسام' : 'عرض خدمات الحربية'}
+                  className={`glassmorphism p-4 rounded-xl flex items-center justify-between gap-3 w-full text-start transition-all cursor-pointer ${
+                    sectorView === 'military'
+                      ? 'border-military-accent bg-military-primary/10'
+                      : 'hover:border-military-accent/50 hover:bg-military-primary/5'
+                  }`}
+                >
+                  <span className="text-sm font-bold text-amber-400">خدمات الحربية</span>
+                  <span className="text-2xl font-black text-amber-400">{militaryRows.length}</span>
+                </button>
+              )}
+              {showInternal && (
+                <button
+                  type="button"
+                  onClick={() => setSectorView(sectorView === 'internal' ? null : 'internal')}
+                  title={sectorView === 'internal' ? 'عرض كل الأقسام' : 'عرض خدمات الداخلية'}
+                  className={`glassmorphism p-4 rounded-xl flex items-center justify-between gap-3 w-full text-start transition-all cursor-pointer ${
+                    sectorView === 'internal'
+                      ? 'border-military-accent bg-military-primary/10'
+                      : 'hover:border-military-accent/50 hover:bg-military-primary/5'
+                  }`}
+                >
+                  <span className="text-sm font-bold text-sky-400">خدمات الداخلية</span>
+                  <span className="text-2xl font-black text-sky-400">{internalRows.length}</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {sectorView && (
+            <div className="flex justify-end">
+              <Button variant="ghost" size="sm" onClick={() => setSectorView(null)}>
+                ✕ عرض كل الأقسام
+              </Button>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-6 w-full">
+            {showMilitary && (sectorView === null || sectorView === 'military') &&
+              section('خدمات الحربية', militaryRows, 'text-amber-400')}
+            {showInternal && (sectorView === null || sectorView === 'internal') &&
+              section('خدمات الداخلية', internalRows, 'text-sky-400')}
+          </div>
         </div>
       )}
 

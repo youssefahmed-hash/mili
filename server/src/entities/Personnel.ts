@@ -74,8 +74,8 @@ export class Personnel {
     @Column({ type: "varchar", length: 50, nullable: true })
     motherPhone!: string | null;
 
-    @Column({ type: "varchar", length: 255 })
-    unit!: string;
+    @Column({ type: "varchar", length: 255, nullable: true })
+    unit!: string | null;
 
     @Column({
         type: "varchar",
@@ -95,6 +95,10 @@ export class Personnel {
 
     @Column({ type: "varchar", length: 100, default: 'داخل القطاع' })
     status!: string;
+
+    /** اسم المستشفى — يظهر عند التمام «مستشفى خارجي» */
+    @Column({ type: "varchar", length: 255, nullable: true })
+    hospitalName!: string | null;
 
     @Column({ type: "date", nullable: true })
     enlistmentDate!: Date | null;
@@ -165,9 +169,6 @@ export class Personnel {
     @Column({ type: "varchar", length: 50, nullable: true })
     weaponBan!: string | null;
 
-    @Column({ type: "varchar", length: 255, nullable: true })
-    education!: string | null;
-
     @Column({ type: "varchar", length: 50, nullable: true })
     phone!: string | null;
 
@@ -198,6 +199,15 @@ export class Personnel {
     @Column({ type: "varchar", length: 255, nullable: true })
     workBeforeEnlistment!: string | null;
 
+    @Column({ type: "varchar", length: 255, nullable: true })
+    qualification!: string | null;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    serviceDuration!: string | null;
+
+    @Column({ type: "varchar", length: 20, nullable: true })
+    bloodType!: string | null;
+
     @Column({ type: "text", nullable: true })
     behaviorInUnit!: string | null;
 
@@ -209,6 +219,28 @@ export class Personnel {
 
     @Column({ type: "date", nullable: true })
     batchDate!: Date | null;
+
+    @Column({ type: "boolean", default: false })
+    isRecruit!: boolean;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    sectorDistribution!: string | null;
+
+    @Column({ type: "boolean", default: false })
+    condWeaponBan!: boolean;
+
+    /** نوع منع السلاح (نفسي / سياسي / طبي / جنائي / احترازي / احترازي سياسي) */
+    @Column({ type: "varchar", length: 255, nullable: true })
+    weaponBanType!: string | null;
+
+    @Column({ type: "boolean", default: false })
+    condNeuro!: boolean;
+
+    @Column({ type: "boolean", default: false })
+    condStruckDischarged!: boolean;
+
+    @Column({ type: "boolean", default: false })
+    condStruckRetained!: boolean;
 
     @CreateDateColumn()
     createdAt!: Date;

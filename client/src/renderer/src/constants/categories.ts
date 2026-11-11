@@ -16,11 +16,15 @@ export const RECORD_TABS: TabItem[] = [
 export const TAB_RANK_MAP: Record<string, string[]> = {
   all: [
     'جندي',
+    'مستجد حربية',
+    'مستجد داخلية',
+    'صف ضابط',
     'عريف',
     'رقيب',
     'رقيب أول',
     'مساعد',
     'مساعد أول',
+    'ضابط',
     'ملازم',
     'ملازم أول',
     'نقيب',
@@ -30,9 +34,17 @@ export const TAB_RANK_MAP: Record<string, string[]> = {
     'عميد',
     'لواء'
   ],
-  soldier: ['جندي'],
-  non_commissioned_officer: ['عريف', 'رقيب', 'رقيب أول', 'مساعد', 'مساعد أول'],
-  officer: ['ملازم', 'ملازم أول', 'نقيب', 'رائد', 'مقدم', 'عقيد', 'عميد', 'لواء']
+  soldier: ['جندي', 'مستجد حربية', 'مستجد داخلية'],
+  non_commissioned_officer: [
+    'صف ضابط',
+    'عريف',
+    'رقيب',
+    'رقيب أول',
+    'مساعد',
+    'مساعد أول',
+    'أمين شرطة'
+  ],
+  officer: ['ضابط', 'ملازم', 'ملازم أول', 'نقيب', 'رائد', 'مقدم', 'عقيد', 'عميد', 'لواء']
 }
 
 export type RankCategory = 'soldier' | 'non_commissioned_officer' | 'officer'

@@ -4,15 +4,16 @@ import { useAuthStore } from '../../store/authStore'
 import { canAccessTab, firstAccessibleTab } from '../../constants/permissions'
 import { Header } from './Header'
 import { TopNav } from './TopNav'
+import { NotificationBanner } from '../notification/NotificationBanner'
 import { PersonnelModule } from '../personnel/PersonnelModule'
 import { ClinicDashboard } from '../clinic/ClinicDashboard'
 import { OperationsDashboard } from '../operations/OperationsDashboard'
 import { SecurityDashboard } from '../security/SecurityDashboard'
 import { UsersDashboard } from '../users/UsersDashboard'
-import { VacationLineup } from '../personnel/VacationLineup'
-import { ServicesLineup } from '../personnel/ServicesLineup'
-import VacationApproval from '../personnel/VacationApproval'
+import { NotificationsDashboard } from '../notification/NotificationsDashboard'
+import { ActivityLogDashboard } from '../activity/ActivityLogDashboard'
 import { Settings } from '../Settings'
+import { HomeDashboard } from '../dashboard/HomeDashboard'
 
 export const AppShell: React.FC = () => {
   const { activeTab } = useAppStore()
@@ -22,14 +23,10 @@ export const AppShell: React.FC = () => {
 
   const renderActiveModule = (): React.ReactNode => {
     switch (currentTab) {
+      case 'الصفحة الرئيسية':
+        return <HomeDashboard />
       case 'الأفراد':
         return <PersonnelModule />
-      case 'طابور الاجازات':
-        return <VacationLineup />
-      case 'اعتماد الإجازات':
-        return <VacationApproval />
-      case 'طابور الخدمات':
-        return <ServicesLineup />
       case 'الإعدادات':
         return <Settings />
       case 'العيادة':
@@ -40,6 +37,10 @@ export const AppShell: React.FC = () => {
         return <SecurityDashboard />
       case 'المستخدمين':
         return <UsersDashboard />
+      case 'تنبيهات الإجازات':
+        return <NotificationsDashboard />
+      case 'سجل التحديثات':
+        return <ActivityLogDashboard />
       default:
         return <PersonnelModule />
     }
@@ -52,6 +53,9 @@ export const AppShell: React.FC = () => {
 
       {/* Top Navigation */}
       <TopNav />
+
+      {/* شريط إعلان الإجازات الأحمر */}
+      <NotificationBanner />
 
       {/* Main Content Area */}
       <main className="flex-1 p-8 overflow-y-auto max-w-[1600px] mx-auto w-full">

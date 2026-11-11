@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type TabType = 'الأفراد' | 'طابور الاجازات' | 'طابور الخدمات' | 'الإعدادات' | 'العيادة' | 'العمليات' | 'الأمن' | 'المستخدمين'
+export type TabType = 'الصفحة الرئيسية' | 'الأفراد' | 'طابور الاجازات' | 'طابور الخدمات' | 'الإعدادات' | 'العيادة' | 'العمليات' | 'الأمن' | 'المستخدمين' | 'تنبيهات الإجازات' | 'سجل التحديثات'
 
 interface AppState {
   activeTab: TabType
@@ -10,7 +10,7 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  activeTab: 'الأفراد',
+  activeTab: 'الصفحة الرئيسية',
   searchQuery: '',
   setActiveTab: (tab) => set({ activeTab: tab }),
   setSearchQuery: (query) => set({ searchQuery: query })

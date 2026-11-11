@@ -9,6 +9,8 @@ import { getAllPersonnel } from '../../api/personnel.api'
 import { useAppStore } from '../../store/appStore'
 import { useAuthStore } from '../../store/authStore'
 import { visibleCategories } from '../../constants/permissions'
+import { displayRank } from '../../utils/rankDisplay'
+import { matchesAnySearch } from '../../utils/arabicSearch'
 import type { Personnel } from '../../types/personnel'
 
 export const SecurityDashboard: React.FC = () => {
@@ -34,14 +36,9 @@ export const SecurityDashboard: React.FC = () => {
     }
   }, [])
 
-  const q = (searchQuery || '').trim().toLowerCase()
+  const q = (searchQuery || '').trim()
   const visiblePersonnel = q
-    ? personnel.filter(
-        (p) =>
-          p.fullName.toLowerCase().includes(q) ||
-          p.militaryId.toLowerCase().includes(q) ||
-          (p.rank && p.rank.toLowerCase().includes(q))
-      )
+    ? personnel.filter((p) => matchesAnySearch([p.fullName, p.militaryId, p.rank], q))
     : personnel
 
   useEffect(() => {
@@ -55,7 +52,7 @@ export const SecurityDashboard: React.FC = () => {
       label: 'الاسم',
       render: (row) => <span className="text-gray-100 font-semibold">{row.fullName}</span>
     },
-    { key: 'rank', label: 'الرتبة', render: (row) => <span className="text-gray-300">{row.rank}</span> },
+    { key: 'rank', label: 'الرتبة', render: (row) => <span className="text-gray-300">{displayRank(row.rank, row.personnelType)}</span> },
     {
       key: 'militaryId',
       label: 'الرقم العسكري',
@@ -81,7 +78,7 @@ export const SecurityDashboard: React.FC = () => {
         <div>
           <h2 className="text-2xl font-black text-white">مركز الأمن العسكري والاستخبارات</h2>
           <p className="text-sm text-gray-400">
-            إدارة المواقف الأمنية للأفراد: المحاكمات، الجزئات، تقييم السلوك، والحالة الاجتماعية.
+            إدارة المواقف الأمنية للأفراد: المحاكمات، الجزاءات، تقييم السلوك، والحالة الاجتماعية.
           </p>
         </div>
         <Button
@@ -135,7 +132,7 @@ export const SecurityDashboard: React.FC = () => {
             categories={visibleCategories(user)}
           />
           <p className="text-sm text-gray-400">
-            اختر الفرد ثم اضغط «فتح الملف الأمني» لتسجيل أو تعديل محاكماته، جزئاته، تقييم سلوكه والحالة
+            اختر الفرد ثم اضغط «فتح الملف الأمني» لتسجيل أو تعديل محاكماته، جزاءاته، تقييم سلوكه والحالة
             الاجتماعية.
           </p>
         </div>

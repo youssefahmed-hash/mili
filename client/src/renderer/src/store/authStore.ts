@@ -35,6 +35,16 @@ export const useAuthStore = create<AuthState>((set) => ({
         localStorage.setItem(TOKEN_KEY, res.data.token)
         localStorage.setItem(USER_KEY, JSON.stringify(res.data.user))
         set({ token: res.data.token, user: res.data.user })
+        // مسح جميع dismiss flags عند login جديد — كل Login = Session جديدة
+        try {
+          Object.keys(localStorage).forEach((key) => {
+            if (key.startsWith('notif_dismissed_')) localStorage.removeItem(key)
+          })
+          const { useNotificationStore } = await import('./notificationStore')
+          useNotificationStore.getState()._resetDismissForLogin()
+        } catch {
+          // تجاهل أخطاء التخزين المحلي
+        }
         return true
       }
       set({ error: res.message || 'فشل تسجيل الدخول' })

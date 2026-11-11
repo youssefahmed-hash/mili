@@ -1,5 +1,5 @@
 import API from './axios'
-import type { ApiResponse, Personnel, VacationLineup } from '../types/personnel'
+import type { ApiResponse, Personnel, VacationLineup, StrengthData } from '../types/personnel'
 
 export const getPersonnel = async (
   params: Record<string, string | number>
@@ -52,5 +52,17 @@ export const getVacationLineup = async (date?: string): Promise<ApiResponse<Vaca
   const params: Record<string, string> = {}
   if (date) params.date = date
   const response = await API.get('/personnel/vacation-lineup', { params })
+  return response.data
+}
+
+export const getPersonnelStats = async (
+  params: Record<string, string | number>
+): Promise<ApiResponse<{ total: number; byStatus: Record<string, number> }>> => {
+  const response = await API.get('/personnel/stats', { params })
+  return response.data
+}
+
+export const getStrength = async (): Promise<ApiResponse<StrengthData>> => {
+  const response = await API.get('/personnel/strength')
   return response.data
 }

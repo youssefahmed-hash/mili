@@ -5,7 +5,11 @@ import { successResponse, errorResponse } from "../../utils/apiResponse";
 export class ClinicController {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const records = await clinicService.getAll();
+      const { fromDate, toDate } = req.query;
+      const records = await clinicService.getAll({
+        fromDate: fromDate as string,
+        toDate: toDate as string
+      });
       return successResponse(res, records, "تم جلب سجلات العيادة بنجاح");
     } catch (err) {
       next(err);
@@ -22,11 +26,40 @@ export class ClinicController {
     }
   }
 
+  async getForPrint(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { personnelId, fromDate, toDate } = req.query;
+      const records = await clinicService.getForPrint({
+        personnelId: personnelId as string,
+        fromDate: fromDate as string,
+        toDate: toDate as string
+      });
+      return successResponse(res, records, "تم جلب سجلات الطباعة بنجاح");
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const record = await clinicService.create(req.body);
-      return successResponse(res, record, "تم تسجيل الكشف الطبي بنجاح", 201);
-    } catch (err) {
+      const warnings = (record as { dispense?: { warnings?: string[] } })?.dispense?.warnings;
+      return successResponse(
+        res,
+        record,
+        warnings?.length ? "تم تسجيل الكشف والصرف مع تنبيهات" : "تم تسجيل الكشف الطبي بنجاح",
+        201
+      );
+    } catch (err: any) {
+      // نافذة تأكيد FEFO أثناء إنشاء الكشف: 409 مع تفاصيل التقسيم (والتنفيذ مرجوع بالكامل)
+      if (err?.needsConfirm) {
+        return res.status(409).json({
+          success: false,
+          message: err.message,
+          needsConfirm: true,
+          splitWarnings: err.splitWarnings
+        });
+      }
       next(err);
     }
   }

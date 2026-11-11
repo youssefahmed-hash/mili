@@ -10,12 +10,14 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string
   options: Option[]
   error?: string
+  warning?: string
 }
 
 export const Select: React.FC<SelectProps> = ({
   label,
   options,
   error,
+  warning,
   className = '',
   id,
   disabled,
@@ -45,7 +47,7 @@ export const Select: React.FC<SelectProps> = ({
       )}
       <select
         id={id}
-        className={`w-full bg-military-900 border ${error ? 'border-red-500' : 'border-white/10'} hover:border-white/20 focus:border-military-primary focus:ring-2 focus:ring-military-primary/20 text-gray-200 text-sm rounded-lg p-2.5 transition-colors duration-200 outline-none cursor-pointer ${className}`}
+        className={`w-full bg-military-900 border ${error ? 'border-red-500' : warning ? 'border-amber-500/60' : 'border-white/10'} hover:border-white/20 focus:border-military-primary focus:ring-2 focus:ring-military-primary/20 text-gray-200 text-sm rounded-lg p-2.5 transition-colors duration-200 outline-none cursor-pointer ${className}`}
         {...props}
       >
         {options.map((opt) => (
@@ -55,6 +57,7 @@ export const Select: React.FC<SelectProps> = ({
         ))}
       </select>
       {error && <span className="text-xs text-red-500">{error}</span>}
+      {!error && warning && <span className="text-xs text-amber-400">{warning}</span>}
     </div>
   )
 }

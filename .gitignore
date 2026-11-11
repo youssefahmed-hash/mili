@@ -2,3 +2,10 @@ node_modules/
 server/uploads/
 server/dist/uploads/
 out/
+
+# Local artifacts / backups (not source)
+*.rar
+.opencode/
+deploy-update-*/
+deploy-update-*.zip
+client/electron.vite.config.*.mjs

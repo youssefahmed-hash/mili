@@ -45,6 +45,14 @@ __decorate([
     __metadata("design:type", Date)
 ], Vacation.prototype, "expectedReturnDate", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: "int", default: 0 }),
+    __metadata("design:type", Number)
+], Vacation.prototype, "deductionDays", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "int", default: 0 }),
+    __metadata("design:type", Number)
+], Vacation.prototype, "extensionDays", void 0);
+__decorate([
     (0, typeorm_1.Column)({ type: "varchar", length: 100, default: "معلقة" }),
     __metadata("design:type", String)
 ], Vacation.prototype, "status", void 0);

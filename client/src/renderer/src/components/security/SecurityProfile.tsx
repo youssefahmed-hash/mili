@@ -24,7 +24,7 @@ interface SecurityProfileProps {
 
 const SIT_TYPES = [
   { key: 'محاكمة', label: 'سجل المحاكمات', icon: Scale },
-  { key: 'جزئات', label: 'سجل الجزئات', icon: ShieldCheck },
+  { key: 'جزاءات', label: 'سجل الجزاءات', icon: ShieldCheck },
   { key: 'تقييم سلوك', label: 'سجل تقييم السلوك', icon: Star }
 ]
 

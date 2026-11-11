@@ -2,37 +2,49 @@ import React, { useEffect, useState } from 'react'
 import { usePersonnelStore } from '../../../store/personnelStore'
 import { useAuthStore } from '../../../store/authStore'
 import { canManage } from '../../../constants/permissions'
+import { CONDITION_OPTIONS } from '../../../constants/personnelFields'
 import { Drawer } from '../../ui/Drawer'
 import { Tabs, TabItem } from '../../ui/Tabs'
-import { User, FileText, Calendar, Phone, Briefcase, Award, ShieldAlert } from 'lucide-react'
+import { User, FileText, Calendar, Phone, Briefcase, Award, ShieldAlert, MapPin, UserX } from 'lucide-react'
 import { BasicInfoTab } from './BasicInfoTab'
 import { JobInfoTab } from './JobInfoTab'
 import { ContactInfoTab } from './ContactInfoTab'
 import { DocumentsTab } from './DocumentsTab'
 import { VacationsTab } from './VacationsTab'
+import { AbsenceTab } from './AbsenceTab'
 import { ServicesTab } from './ServicesTab'
 import { RewardsTab } from './RewardsTab'
 import { PenaltiesTab } from './PenaltiesTab'
+import { LineAssignmentsTab } from './LineAssignmentsTab'
 import { resolveFileUrl, isPdf } from '../../../utils/fileUrl'
+import { displayRank } from '../../../utils/rankDisplay'
 import { FileImage } from 'lucide-react'
 
 interface ProfileDrawerProps {
   isOpen: boolean
   onClose: () => void
   personnelId: string
+  /** التبويب اللي يفتح عليه الملف (افتراضي: البيانات الأساسية) */
+  initialTab?: string
 }
 
-export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ isOpen, onClose, personnelId }) => {
+export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
+  isOpen,
+  onClose,
+  personnelId,
+  initialTab
+}) => {
   const { selectedPersonnel, fetchPersonnelDetail, loading } = usePersonnelStore()
   const user = useAuthStore((s) => s.user)
   const manage = canManage(user)
-  const [activeTab, setActiveTab] = useState('basic')
+  const [activeTab, setActiveTab] = useState(initialTab || 'basic')
 
   useEffect(() => {
     if (isOpen && personnelId) {
       fetchPersonnelDetail(personnelId)
+      setActiveTab(initialTab || 'basic')
     }
-  }, [isOpen, personnelId, fetchPersonnelDetail])
+  }, [isOpen, personnelId, initialTab, fetchPersonnelDetail])
 
   const profileTabs: TabItem[] = [
     { id: 'basic', label: 'البيانات الأساسية', icon: <User className="h-4 w-4" /> },
@@ -40,9 +52,11 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ isOpen, onClose, p
     { id: 'contact', label: 'بيانات التواصل', icon: <Phone className="h-4 w-4" /> },
     { id: 'documents', label: 'المستندات', icon: <FileText className="h-4 w-4" /> },
     { id: 'vacations', label: 'سجل الإجازات', icon: <Calendar className="h-4 w-4" /> },
+    { id: 'absences', label: 'سجل الغياب', icon: <UserX className="h-4 w-4" /> },
     { id: 'services', label: 'سجل الخدمات', icon: <Briefcase className="h-4 w-4" /> },
     { id: 'rewards', label: 'المكافآت', icon: <Award className="h-4 w-4" /> },
-    { id: 'penalties', label: 'العقوبات', icon: <ShieldAlert className="h-4 w-4" /> }
+    { id: 'penalties', label: 'العقوبات', icon: <ShieldAlert className="h-4 w-4" /> },
+    { id: 'line-assignments', label: 'تعيينات الخط', icon: <MapPin className="h-4 w-4" /> }
   ]
 
   const renderTabContent = (): React.ReactNode => {
@@ -58,12 +72,16 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ isOpen, onClose, p
         return <DocumentsTab data={selectedPersonnel} />
       case 'vacations':
         return <VacationsTab data={selectedPersonnel} canManage={manage} />
+      case 'absences':
+        return <AbsenceTab data={selectedPersonnel} canManage={manage} />
       case 'services':
         return <ServicesTab data={selectedPersonnel} canManage={manage} />
       case 'rewards':
         return <RewardsTab data={selectedPersonnel} canManage={manage} />
       case 'penalties':
         return <PenaltiesTab data={selectedPersonnel} canManage={manage} />
+      case 'line-assignments':
+        return <LineAssignmentsTab personnelId={selectedPersonnel.id} />
       default:
         return <BasicInfoTab data={selectedPersonnel} />
     }
@@ -116,9 +134,23 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ isOpen, onClose, p
             )}
             <div className="flex flex-col text-start gap-1">
               <h4 className="text-lg font-black text-white">{selectedPersonnel.fullName}</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {CONDITION_OPTIONS.filter((c) =>
+                  Boolean(selectedPersonnel[c.value as keyof typeof selectedPersonnel])
+                ).map((c) => (
+                  <span
+                    key={c.value}
+                    className="text-[10px] font-bold text-orange-300 bg-orange-500/15 border border-orange-500/30 rounded px-1.5 py-0.5"
+                  >
+                    {c.value === 'weaponBan'
+                      ? selectedPersonnel.weaponBanType || c.label
+                      : c.label}
+                  </span>
+                ))}
+              </div>
               <div className="flex flex-wrap gap-2 text-xs text-gray-400">
                 <span>
-                  الرتبة: <strong className="text-military-accent">{selectedPersonnel.rank}</strong>
+                  الرتبة: <strong className="text-military-accent">{displayRank(selectedPersonnel.rank, selectedPersonnel.personnelType)}</strong>
                 </span>
                 <span>•</span>
                 <span>
@@ -127,7 +159,7 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ isOpen, onClose, p
                 </span>
                 <span>•</span>
                 <span>
-                   القسم: <strong className="text-gray-200">{selectedPersonnel.unit}</strong>
+                   القسم: <strong className="text-gray-200">{selectedPersonnel.unit || 'بدون قسم'}</strong>
                 </span>
               </div>
             </div>

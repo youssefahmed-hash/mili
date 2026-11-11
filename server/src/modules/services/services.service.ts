@@ -85,12 +85,14 @@ export class ServicesService {
       notes: s.notes
     });
 
-    const internal = ofDay
-      .filter((s) => (s.personnel?.personnelType || "داخلية") !== "حربية")
-      .map(mapItem);
-    const military = ofDay
-      .filter((s) => s.personnel?.personnelType === "حربية")
-      .map(mapItem);
+    // في طابور الخدمات: تشغيل حربيه يظهر للحربية فقط (ليس مشتركًا هنا)
+    const isMilitary = (s: Service & { personnel?: Personnel }): boolean =>
+      s.personnel?.personnelType === "حربية" || s.personnel?.personnelType === "تشغيل حربيه";
+    const isInternal = (s: Service & { personnel?: Personnel }): boolean =>
+      !isMilitary(s);
+
+    const internal = ofDay.filter(isInternal).map(mapItem);
+    const military = ofDay.filter(isMilitary).map(mapItem);
 
     return { date, internal, military };
   }

@@ -1,5 +1,12 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm'
 
+/** الأدوار المتاحة:
+ *  admin            → مدير النظام (يشوف كل حاجة)
+ *  internal_manager → مدير داخلية (زي المدير في الصلاحيات، بس نطاقه داخلية فقط)
+ *  user             → مستخدم عادي
+ */
+export type UserRole = 'admin' | 'internal_manager' | 'user'
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -15,7 +22,7 @@ export class User {
   fullName!: string
 
   @Column({ type: 'varchar', default: 'user' })
-  role!: 'admin' | 'user'
+  role!: UserRole
 
   @Column({ type: 'varchar', default: 'حربية' })
   userType!: 'داخلية' | 'حربية'

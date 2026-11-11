@@ -10,9 +10,25 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const JWT_SECRET = process.env.JWT_SECRET || 'mili_jwt_secret_2024';
 const SALT_ROUNDS = 10;
+/** يقبل الأدوار الثلاثة فقط — أي قيمة أخرى ترجع user. */
+function normalizeRole(input) {
+    return input === 'admin' || input === 'internal_manager' || input === 'user'
+        ? input
+        : 'user';
+}
 function sanitize(u) {
     const { password, ...rest } = u;
     return rest;
+}
+/** توحيد اسم قسم الأمن القديم حسب نوع المستخدم */
+function normalizeDepartment(department, userType) {
+    if (department === undefined)
+        return undefined;
+    const d = department.trim();
+    if (d === 'أمن' || d === 'امن') {
+        return userType === 'داخلية' ? 'أمن داخلية' : 'أمن حربية';
+    }
+    return d;
 }
 class AuthService {
     constructor() {
@@ -26,14 +42,17 @@ class AuthService {
             throw e;
         }
         const hashed = await bcryptjs_1.default.hash(input.password, SALT_ROUNDS);
+        const role = normalizeRole(input.role);
+        // مدير الداخلية نطاقه داخلية دائماً — نثبّتها حتى لو جت قيمة غلط من العميل
+        const userType = role === 'internal_manager' ? 'داخلية' : input.userType || 'حربية';
         const user = this.repo.create({
             username: input.username,
             password: hashed,
             fullName: input.fullName || '',
-            userType: input.userType || 'حربية',
-            department: input.department || '',
+            userType,
+            department: normalizeDepartment(input.department || '', userType) || '',
             degree: input.degree || 'جندي',
-            role: input.role === 'admin' ? 'admin' : 'user'
+            role
         });
         const saved = await this.repo.save(user);
         return sanitize(saved);
@@ -76,14 +95,18 @@ class AuthService {
         }
         if (input.fullName !== undefined)
             user.fullName = input.fullName;
-        if (input.department !== undefined)
-            user.department = input.department;
         if (input.degree !== undefined)
             user.degree = input.degree;
         if (input.userType !== undefined)
             user.userType = input.userType;
         if (input.role !== undefined)
-            user.role = input.role;
+            user.role = normalizeRole(input.role);
+        // مدير الداخلية يفضل داخلي دائماً
+        if (user.role === 'internal_manager')
+            user.userType = 'داخلية';
+        if (input.department !== undefined) {
+            user.department = normalizeDepartment(input.department, user.userType) || '';
+        }
         if (input.password)
             user.password = await bcryptjs_1.default.hash(input.password, SALT_ROUNDS);
         const saved = await this.repo.save(user);
@@ -148,6 +171,21 @@ class AuthService {
             });
             await this.repo.save(admin);
             console.log('[seed] تم إنشاء مدير افتراضي (admin / admin123)');
+        }
+    }
+    /** توحيد أسماء أقسام الأمن القديمة (أمن → أمن حربية / أمن داخلية) حسب نوع المستخدم */
+    async normalizeDepartmentNames() {
+        const users = await this.repo.find();
+        let changed = 0;
+        for (const user of users) {
+            if (user.department === 'أمن' || user.department === 'امن') {
+                user.department = user.userType === 'داخلية' ? 'أمن داخلية' : 'أمن حربية';
+                await this.repo.save(user);
+                changed++;
+            }
+        }
+        if (changed > 0) {
+            console.log(`[user-departments] تم توحيد قسم الأمن لـ ${changed} مستخدم`);
         }
     }
 }

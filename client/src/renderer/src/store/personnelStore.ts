@@ -13,13 +13,33 @@ interface Filters {
   rank?: string
   unit?: string
   status?: string
+  statusNe?: string
   personnelType?: string
+  sector?: string
+  /** بحث بتاريخ التسريح بالشهر والسنة (YYYY-MM) */
+  dischargeMonth?: string
+  /** بحث بالعمل قبل التجنيد */
+  workBeforeEnlistment?: string
+  /** شرط من شروط المؤثرات — للحفر من كروت الداشبورد */
+  condition?: string
+}
+
+export type DrilldownMode = 'total' | 'out' | 'present'
+
+export interface Drilldown {
+  personnelType: string
+  mode: DrilldownMode
+  /** عند الحفر على حالة التمام (غياب / محكمه / مستشفى خارجي) */
+  status?: string
+  /** عند الحفر على شرط من شروط المؤثرات */
+  condition?: string
 }
 
 interface PersonnelState {
   personnelList: Personnel[]
   selectedPersonnel: Personnel | null
   filters: Filters
+  drilldown: Drilldown | null
   pagination: {
     total: number
     page: number
@@ -31,6 +51,8 @@ interface PersonnelState {
 
   setFilters: (filters: Partial<Filters>) => void
   clearFilters: () => void
+  setDrilldown: (d: Drilldown) => void
+  clearDrilldown: () => void
   fetchPersonnelList: (search?: string, page?: number) => Promise<void>
   fetchPersonnelDetail: (id: string) => Promise<void>
   addPersonnel: (formData: FormData) => Promise<boolean>
@@ -43,6 +65,7 @@ export const usePersonnelStore = create<PersonnelState>((set, get) => ({
   personnelList: [],
   selectedPersonnel: null,
   filters: {},
+  drilldown: null,
   pagination: {
     total: 0,
     page: 1,
@@ -64,6 +87,14 @@ export const usePersonnelStore = create<PersonnelState>((set, get) => ({
     set({ filters: next })
   },
 
+  setDrilldown: (d) => {
+    set({ drilldown: d })
+  },
+
+  clearDrilldown: () => {
+    set({ drilldown: null })
+  },
+
   setSelectedPersonnel: (personnel) => {
     set({ selectedPersonnel: personnel })
   },
@@ -76,6 +107,7 @@ export const usePersonnelStore = create<PersonnelState>((set, get) => ({
         search,
         page,
         limit: get().pagination.limit,
+        includeRecruits: 'true',
         ...filters
       }
       const response: ApiResponse<Personnel[]> = await getPersonnel(params)

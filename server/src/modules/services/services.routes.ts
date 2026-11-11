@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { servicesController } from "./services.controller";
+import { requireAuth } from "../../modules/auth/auth.middleware";
 
 const router = Router();
+
+// كل مسارات هذا الموديول تتطلب تسجيل دخول (token) — حماية شاملة من router واحد.
+router.use(requireAuth);
 
 router.get("/", servicesController.getAll);
 router.get("/lineup", servicesController.getLineup);

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "nvidia/nemotron-4-340b-instruct",
+  "default_agent": "nemotron-planner",
+  "agent": {
+    "nemotron-planner": {
+      "model": "nvidia/nemotron-4-340b-instruct",
+      "mode": "primary",
+      "description": "Nemotron: Analyzes problems, creates plans, and reviews final code"
+    },
+    "mimo-executor": {
+      "model": "opencode/mimo-v2.5-free",
+      "mode": "subagent",
+      "description": "MiMo: Executes code changes and fixes build errors"
+    }
+  }
+}

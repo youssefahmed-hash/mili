@@ -35,7 +35,7 @@ export const getVacations = async (status?: string): Promise<ApiResponse<Vacatio
 
 export const bulkCreateVacations = async (
   personnelIds: string[],
-  data: Omit<Vacation, 'id' | 'actualReturnDate' | 'personnelId'>
+  data: Omit<Vacation, 'id' | 'actualReturnDate' | 'personnelId' | 'status'>
 ): Promise<ApiResponse<Vacation[]>> => {
   const response = await API.post('/vacations/bulk', { personnelIds, ...data })
   return response.data

@@ -1,32 +1,60 @@
 import React from 'react'
-import { Users, CalendarClock, HeartPulse, Crosshair, ShieldCheck, UserCog, ClipboardList, CalendarCheck } from 'lucide-react'
+import {
+  Users,
+  HeartPulse,
+  Crosshair,
+  ShieldCheck,
+  UserCog,
+  Bell,
+  LayoutDashboard,
+  History
+} from 'lucide-react'
 import { useAppStore, TabType } from '../../store/appStore'
 import { useAuthStore } from '../../store/authStore'
-import { canAccessTab } from '../../constants/permissions'
+import { useActivityStore } from '../../store/activityStore'
+import { canAccessTab, isSuperAdmin } from '../../constants/permissions'
 
 export const TopNav: React.FC = () => {
   const { activeTab, setActiveTab } = useAppStore()
   const user = useAuthStore((s) => s.user)
+  const { newCount, fetchNewCount } = useActivityStore()
+
+  React.useEffect(() => {
+    void fetchNewCount()
+    const timer = setInterval(() => {
+      void fetchNewCount()
+    }, 45000)
+    return () => clearInterval(timer)
+  }, [fetchNewCount])
 
   const allItems = [
+    {
+      id: 'الصفحة الرئيسية' as TabType,
+      label: 'الصفحة الرئيسية',
+      icon: LayoutDashboard
+    },
     {
       id: 'الأفراد' as TabType,
       label: user?.userType === 'داخلية' ? 'الشئون مجندين' : 'الأفراد',
       icon: Users
     },
-    { id: 'طابور الاجازات' as TabType, label: 'طابور الاجازات', icon: CalendarClock },
-    { id: 'اعتماد الإجازات' as TabType, label: 'اعتماد الإجازات', icon: CalendarCheck },
-    { id: 'طابور الخدمات' as TabType, label: 'طابور الخدمات', icon: ClipboardList },
     { id: 'العيادة' as TabType, label: 'العيادة', icon: HeartPulse },
     { id: 'العمليات' as TabType, label: 'العمليات', icon: Crosshair },
-    { id: 'الأمن' as TabType, label: 'الأمن', icon: ShieldCheck }
+    { id: 'الأمن' as TabType, label: 'الأمن', icon: ShieldCheck },
+    { id: 'سجل التحديثات' as TabType, label: 'سجل التحديثات', icon: History }
   ]
 
-  if (user?.role === 'admin') {
+  // المستخدمون + تنبيهات الإجازات: مدير النظام فقط (canAccessModule يتحقق من الباقي)
+if (isSuperAdmin(user)) {
     allItems.push({
       id: 'المستخدمين' as TabType,
       label: 'المستخدمين',
       icon: UserCog
+    })
+    allItems.push({
+      id: 'تنبيهات الإجازات',
+      label: 'تنبيهات الإجازات',
+      icon: Bell
     })
   }
 
@@ -51,6 +79,11 @@ export const TopNav: React.FC = () => {
               className={`h-4.5 w-4.5 ${isActive ? 'text-military-primary' : 'text-gray-400'}`}
             />
             <span>{item.label}</span>
+            {item.id === 'سجل التحديثات' && newCount > 0 && (
+              <span className="min-w-5 h-5 px-1.5 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center">
+                {newCount > 99 ? '99+' : newCount}
+              </span>
+            )}
           </button>
         )
       })}

@@ -1,11 +1,14 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog, Notification } from 'electron'
+import { writeFile } from 'fs/promises'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+let mainWindow: BrowserWindow | null = null
+
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1366,
     height: 768,
     show: false,
@@ -18,7 +21,7 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    mainWindow?.show()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -51,6 +54,99 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  // IPC: تنبيه نظام (Toast) بإعلان الإجازات — يظهر فوق أي شاشة
+  ipcMain.handle(
+    'vacation-alert',
+    async (event, { title, body }: { title: string; body: string }) => {
+      try {
+        const senderWindow = BrowserWindow.fromWebContents(event.sender) || mainWindow
+        const toast = new Notification({ title, body })
+        toast.on('click', () => {
+          const win =
+            senderWindow && !senderWindow.isDestroyed() ? senderWindow : mainWindow
+          if (win && !win.isDestroyed()) {
+            if (win.isMinimized()) win.restore()
+            win.focus()
+            win.webContents.send('vacation-alert-clicked')
+          }
+        })
+        toast.show()
+        return { success: true }
+      } catch (err) {
+        console.error('Vacation alert error:', err)
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : String(err)
+        }
+      }
+    }
+  )
+
+  // IPC: Print HTML to PDF using native Chromium rendering (proper Arabic text support)
+  ipcMain.handle(
+    'print-to-pdf',
+    async (_event, { html, fileName }: { html: string; fileName: string }) => {
+      // Ask the user where to save the PDF
+      const result = await dialog.showSaveDialog({
+        title: 'حفظ ملف PDF',
+        defaultPath: fileName,
+        filters: [{ name: 'PDF', extensions: ['pdf'] }]
+      })
+
+      if (result.canceled || !result.filePath) {
+        return { success: false, canceled: true }
+      }
+
+      // Create a hidden BrowserWindow for rendering
+      const pdfWindow = new BrowserWindow({
+        width: 794, // A4 width in pixels at 96dpi
+        height: 1123, // A4 height in pixels at 96dpi
+        show: false,
+        webPreferences: {
+          sandbox: false
+        }
+      })
+
+      try {
+        // Load the HTML content
+        await pdfWindow.loadURL(
+          `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
+        )
+
+        // Wait for fonts to load and content to render
+        await pdfWindow.webContents.executeJavaScript(
+          `document.fonts.ready.then(() => new Promise(r => setTimeout(r, 1500)))`
+        )
+
+        // Generate PDF using Chromium's native renderer
+        const pdfBuffer = await pdfWindow.webContents.printToPDF({
+          printBackground: true,
+          pageSize: 'A4',
+          margins: {
+            marginType: 'custom',
+            top: 0.15,
+            bottom: 0.15,
+            left: 0.15,
+            right: 0.15
+          }
+        })
+
+        // Save the PDF file
+        await writeFile(result.filePath, pdfBuffer)
+
+        return { success: true, filePath: result.filePath }
+      } catch (err) {
+        console.error('PDF generation error:', err)
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : String(err)
+        }
+      } finally {
+        pdfWindow.destroy()
+      }
+    }
+  )
 
   createWindow()
 

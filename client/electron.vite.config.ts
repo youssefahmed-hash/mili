@@ -12,6 +12,12 @@ export default defineConfig({
         '@renderer': resolve('src/renderer/src')
       }
     },
-    plugins: [react(), tailwindcss()]
+    plugins: [react(), tailwindcss()],
+    // السماح بالوصول من أجهزة الشبكة المحلية (موبايل/تابلت) أثناء التطوير
+    server: {
+      host: '0.0.0.0',
+      port: 5173,
+      strictPort: true
+    }
   }
 })

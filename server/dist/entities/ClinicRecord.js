@@ -53,6 +53,14 @@ __decorate([
     __metadata("design:type", String)
 ], ClinicRecord.prototype, "clinicType", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 20, default: "داخل الوحدة" }),
+    __metadata("design:type", String)
+], ClinicRecord.prototype, "locationType", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", Object)
+], ClinicRecord.prototype, "locationAddress", void 0);
+__decorate([
     (0, typeorm_1.Column)({ type: "varchar", length: 100, nullable: true }),
     __metadata("design:type", Object)
 ], ClinicRecord.prototype, "carnetNumber", void 0);

@@ -24,6 +24,7 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "axios": "^1.7.2",
+    "html2pdf.js": "^0.14.0",
     "lucide-react": "^0.395.0",
     "zustand": "^4.5.2"
   },

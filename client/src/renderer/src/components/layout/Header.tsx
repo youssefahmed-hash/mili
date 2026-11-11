@@ -1,8 +1,10 @@
 import React from 'react'
 import { Shield, User, LogOut, Settings as SettingsIcon } from 'lucide-react'
 import { GlobalSearch } from './GlobalSearch'
+import { NotificationBell } from '../notification/NotificationBell'
 import { useAuthStore } from '../../store/authStore'
 import { useAppStore } from '../../store/appStore'
+import { ROLE_LABELS } from '../../types/user'
 
 export const Header: React.FC = () => {
   const { user, logout } = useAuthStore()
@@ -30,14 +32,16 @@ export const Header: React.FC = () => {
         <GlobalSearch />
       </div>
 
-      {/* Left side: Profile Badge + Logout */}
-      <div className="flex items-center gap-3 bg-military-900/60 border border-white/5 rounded-full py-1.5 ps-4 pe-2">
+      {/* Left side: Notifications + Profile Badge + Logout */}
+      <div className="flex items-center gap-2">
+        <NotificationBell />
+        <div className="flex items-center gap-3 bg-military-900/60 border border-white/5 rounded-full py-1.5 ps-4 pe-2">
         <div className="flex flex-col text-end">
           <span className="text-sm font-bold text-white leading-tight">
             {user?.fullName || user?.username || 'مستخدم'}
           </span>
           <span className="text-[10px] text-military-accent font-semibold leading-tight">
-            {user?.role === 'admin' ? 'مدير النظام' : 'مستخدم'} • {user?.department || '—'}
+            {ROLE_LABELS[user?.role || 'user']} • {user?.department || '—'}
           </span>
         </div>
         <div className="h-8 w-8 rounded-full bg-military-primary flex items-center justify-center border border-white/10 shadow-lg">
@@ -57,6 +61,7 @@ export const Header: React.FC = () => {
         >
           <LogOut className="h-4 w-4" />
         </button>
+        </div>
       </div>
     </header>
   )

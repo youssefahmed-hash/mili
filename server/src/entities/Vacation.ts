@@ -25,6 +25,14 @@ export class Vacation {
     @Column({ type: "date" })
     expectedReturnDate!: Date;
 
+    /** أيام خصم من الإجازة (0 إلى 14) — بتقلّل تاريخ العودة */
+    @Column({ type: "int", default: 0 })
+    deductionDays!: number;
+
+    /** أيام مد للإجازة (0 إلى 30) — بتزوّد تاريخ العودة */
+    @Column({ type: "int", default: 0 })
+    extensionDays!: number;
+
     @Column({ type: "varchar", length: 100, default: "معلقة" })
     status!: string;
 

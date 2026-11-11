@@ -9,7 +9,10 @@ import { useAuthStore } from '../../store/authStore'
 import { useAppStore } from '../../store/appStore'
 import { listUsers, createUser, updateUser, deleteUser } from '../../api/auth.api'
 import { getUserSectionOptions, getUserDegreeOptions, USER_SECTIONS_BY_TYPE } from '../../constants/departments'
-import type { User, RegisterPayload } from '../../types/user'
+import { displayDegree } from '../../utils/rankDisplay'
+import { matchesAnySearch } from '../../utils/arabicSearch'
+import type { User, RegisterPayload, UserRole } from '../../types/user'
+import { ROLE_LABELS } from '../../types/user'
 
 export const UsersDashboard: React.FC = () => {
   const currentUser = useAuthStore((s) => s.user)
@@ -140,13 +143,9 @@ export const UsersDashboard: React.FC = () => {
       ? [{ value: form.department, label: form.department }, ...baseDeptOptions]
       : baseDeptOptions
 
-  const q = (searchQuery || '').trim().toLowerCase()
+  const q = (searchQuery || '').trim()
   const visibleUsers = q
-    ? users.filter(
-        (u) =>
-          u.username.toLowerCase().includes(q) ||
-          (u.fullName || '').toLowerCase().includes(q)
-      )
+    ? users.filter((u) => matchesAnySearch([u.username, u.fullName], q))
     : users
   const typeOptions = [
     { value: 'حربية', label: 'حربية' },
@@ -154,7 +153,8 @@ export const UsersDashboard: React.FC = () => {
   ]
   const roleOptions = [
     { value: 'user', label: 'مستخدم' },
-    { value: 'admin', label: 'مدير' }
+    { value: 'internal_manager', label: 'مدير داخلية' },
+    { value: 'admin', label: 'مدير النظام' }
   ]
 
   const columns: Column<User>[] = [
@@ -173,12 +173,12 @@ export const UsersDashboard: React.FC = () => {
     {
       key: 'degree',
       label: 'الدرجة',
-      render: (row) => <span className="text-gray-300">{row.degree}</span>
+      render: (row) => <span className="text-gray-300">{displayDegree(row.degree, row.userType)}</span>
     },
     {
       key: 'role',
       label: 'الصلاحية',
-      render: (row) => (row.role === 'admin' ? 'مدير' : 'مستخدم')
+      render: (row) => <span>{ROLE_LABELS[row.role] || row.role}</span>
     },
     {
       key: 'createdAt',
@@ -302,7 +302,10 @@ export const UsersDashboard: React.FC = () => {
             />
             <Select
               label="الدرجة"
-              options={getUserDegreeOptions()}
+              options={getUserDegreeOptions().map((o) => ({
+                value: o.value,
+                label: displayDegree(o.value, form.userType) || o.label
+              }))}
               value={form.degree}
               onChange={(e) => setForm({ ...form, degree: e.target.value as 'جندي' | 'صف ضابط' | 'ضابط' })}
             />
@@ -310,8 +313,14 @@ export const UsersDashboard: React.FC = () => {
               label="الصلاحية"
               options={roleOptions}
               value={form.role}
-              onChange={(e) => setForm({ ...form, role: e.target.value as 'admin' | 'user' })}
+              onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })}
             />
+            {form.role === 'internal_manager' && (
+              <div className="md:col-span-2 -mt-2 text-xs text-sky-300 bg-sky-500/10 border border-sky-500/20 rounded-lg px-3 py-2">
+                مدير داخلية: يشوف كل التبويبات زي المدير، بس نطاقه عساكر الداخلية
+                (داخلية + تشغيل + مستجدين داخلية) — ومش بيدير المستخدمين ولا إعدادات التناوب.
+              </div>
+            )}
           </div>
         </form>
       </Modal>

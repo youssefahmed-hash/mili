@@ -14,7 +14,7 @@ export const GlobalSearch: React.FC = () => {
         type="text"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="ابحث بالاسم، الرقم العسكري..."
+        placeholder="ابحث بالاسم، القسم، الرقم العسكري، التليفون، التاريخ..."
         className="w-full bg-military-900/60 border border-white/10 hover:border-white/20 focus:border-military-primary focus:ring-2 focus:ring-military-primary/20 text-gray-200 text-sm rounded-lg ps-10 pe-4 py-2 transition-colors duration-200 outline-none text-start font-medium"
       />
     </div>

@@ -1,32 +1,37 @@
 import { Router } from "express";
 import { personnelController } from "./personnel.controller";
 import { upload } from "../../middlewares/upload";
+import { requireAuthScope } from "../../middlewares/userScope";
 
 const router = Router();
 
-router.get("/", personnelController.getAll);
-router.get("/vacation-lineup", personnelController.getVacationLineup);
-router.get("/:id", personnelController.getOne);
+router.get("/", requireAuthScope, personnelController.getAll);
+router.get("/strength", requireAuthScope, personnelController.getStrength);
+router.get("/stats", requireAuthScope, personnelController.getStats);
+router.get("/vacation-lineup", requireAuthScope, personnelController.getVacationLineup);
+router.get("/:id", requireAuthScope, personnelController.getOne);
 router.post(
-  "/",
-  upload.fields([
-    { name: "photo" },
-    { name: "cardImage" },
-    { name: "carnetImage" },
-    { name: "formImage" }
-  ]),
-  personnelController.create
+    "/",
+    requireAuthScope,
+    upload.fields([
+        { name: "photo" },
+        { name: "cardImage" },
+        { name: "carnetImage" },
+        { name: "formImage" }
+    ]),
+    personnelController.create
 );
 router.put(
-  "/:id",
-  upload.fields([
-    { name: "photo" },
-    { name: "carnetImage" },
-    { name: "cardImage" },
-    { name: "formImage" }
-  ]),
-  personnelController.update
+    "/:id",
+    requireAuthScope,
+    upload.fields([
+        { name: "photo" },
+        { name: "carnetImage" },
+        { name: "cardImage" },
+        { name: "formImage" }
+    ]),
+    personnelController.update
 );
-router.delete("/:id", personnelController.delete);
+router.delete("/:id", requireAuthScope, personnelController.delete);
 
 export default router;
